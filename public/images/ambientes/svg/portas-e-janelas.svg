@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><defs>
+<radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFF4DA" stop-opacity="0.9"/><stop offset="1" stop-color="#FFF4DA" stop-opacity="0"/></radialGradient>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ECE7DF"/><stop offset="1" stop-color="#E2DBD0"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B07F55"/><stop offset="1" stop-color="#94673F"/></linearGradient>
+<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BDB3A4"/><stop offset="1" stop-color="#A99E8E"/></linearGradient>
+<linearGradient id="woodfloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C49A70"/><stop offset="1" stop-color="#A97F57"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C9CED3"/><stop offset="0.5" stop-color="#E6E9EC"/><stop offset="1" stop-color="#BFC5CB"/></linearGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFD9E8"/><stop offset="1" stop-color="#E8F1F4"/></linearGradient>
+<linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D6E6EE"/><stop offset="1" stop-color="#B9D0DC"/></linearGradient>
+</defs><rect width="800" height="600" fill="url(#wall)"/><rect y="470" width="800" height="130" fill="url(#woodfloor)"/><rect y="466" width="800" height="6" fill="#CFC6B8"/><line x1="0" y1="500" x2="800" y2="500" stroke="#9C744E" stroke-width="2"/><line x1="0" y1="534" x2="800" y2="534" stroke="#9C744E" stroke-width="2"/><line x1="0" y1="568" x2="800" y2="568" stroke="#9C744E" stroke-width="2"/>
+<rect x="70" y="70" width="380" height="300" fill="url(#sky)"/>
+<ellipse cx="160" cy="340" rx="110" ry="60" fill="#89A97D"/><ellipse cx="360" cy="350" rx="120" ry="50" fill="#7E9F73"/>
+<rect x="70" y="70" width="380" height="300" fill="url(#glass)" opacity="0.35"/>
+<g fill="none" stroke="#2E2E2E" stroke-width="10"><rect x="70" y="70" width="380" height="300"/><line x1="260" y1="70" x2="260" y2="370"/></g>
+<path d="M110 110 L150 90" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="6" stroke-linecap="round"/><path d="M300 110 L340 90" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="6" stroke-linecap="round"/>
+<rect x="60" y="370" width="400" height="12" fill="#F6F4F0"/>
+<path d="M40 50 h40 v360 q-20 10 -40 0z" fill="#E9E1D4"/><path d="M440 50 h40 v360 q-20 10 -40 0z" fill="#E9E1D4"/><rect x="30" y="44" width="460" height="8" rx="4" fill="#B48E57"/>
+<rect x="540" y="110" width="190" height="360" fill="#F6F4F0"/>
+<rect x="552" y="122" width="166" height="348" fill="url(#wood)"/>
+<g stroke="#7E5734" stroke-width="2" fill="none"><rect x="572" y="146" width="126" height="130"/><rect x="572" y="300" width="126" height="140"/></g>
+<rect x="580" y="290" width="40" height="8" rx="4" fill="#2E2E2E"/></svg>

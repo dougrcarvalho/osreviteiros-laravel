@@ -1,0 +1,54 @@
+{
+  "_comment": "Configuração MCP recomendada para o projeto Os Reviteiros Laravel",
+  "_instrucoes": "Copie as entradas relevantes para ~/.claude/claude_desktop_config.json ou configure via claude.ai Settings → MCP Servers",
+
+  "mcpServers": {
+    "filesystem": {
+      "_descricao": "Acesso direto aos arquivos do projeto Laravel",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/caminho/para/osreviteiros"
+      ]
+    },
+
+    "mysql": {
+      "_descricao": "Conexão direta ao banco MySQL do projeto — permite Claude consultar e inspecionar dados",
+      "_install": "npm install -g @benborla29/mcp-server-mysql",
+      "command": "npx",
+      "args": ["-y", "@benborla29/mcp-server-mysql"],
+      "env": {
+        "MYSQL_HOST": "127.0.0.1",
+        "MYSQL_PORT": "3306",
+        "MYSQL_USER": "reviteiros_user",
+        "MYSQL_PASS": "SUA_SENHA_AQUI",
+        "MYSQL_DB":   "reviteiros"
+      }
+    },
+
+    "github": {
+      "_descricao": "Integração com repositório GitHub — PRs, issues, commits",
+      "_install": "Requer GITHUB_PERSONAL_ACCESS_TOKEN com permissão repo",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "SEU_TOKEN_AQUI"
+      }
+    },
+
+    "puppeteer": {
+      "_descricao": "Testes visuais / screenshot das páginas em desenvolvimento",
+      "_install": "npm install -g @modelcontextprotocol/server-puppeteer",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+    }
+  },
+
+  "_prioridade_de_uso": [
+    "1. filesystem — para ler/editar qualquer arquivo do projeto sem precisar colar conteúdo",
+    "2. mysql — para inspecionar dados importados, verificar migrations",
+    "3. github — para criar PRs, revisar diffs, gerenciar issues",
+    "4. puppeteer — para verificar visualmente o resultado das telas"
+  ]
+}

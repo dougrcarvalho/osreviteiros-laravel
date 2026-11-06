@@ -1,0 +1,32 @@
+# Borda da VPS: Caddy é o único que publica 80/443. Os sites entram pela rede externa `proxy`.
+# Os volumes dos sites PHP ficam em :ro e com o MESMO caminho do container `php`.
+services:
+    caddy:
+        image: caddy:2-alpine
+        container_name: caddy
+        restart: unless-stopped
+        environment:
+            ACME_EMAIL: '${ACME_EMAIL}'
+        ports:
+            - '80:80'
+            - '443:443'
+            - '443:443/udp'
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+            - ./sites:/etc/caddy/sites:ro
+            - caddy-data:/data          # certificados: não apague
+            - caddy-config:/config
+            - ../zivit:/var/www/zivit:ro
+            - ../catracapadaria:/var/www/catracapadaria:ro
+            - ../lavemarte:/var/www/lavemarte:ro
+            - ../bakery:/var/www/bakery:ro
+            - ../inspirare:/var/www/inspirare:ro
+        networks: [proxy]
+
+networks:
+    proxy:
+        external: true
+
+volumes:
+    caddy-data:
+    caddy-config:

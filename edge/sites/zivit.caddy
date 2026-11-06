@@ -1,0 +1,10 @@
+zivit.com.br, www.zivit.com.br {
+	root * /var/www/zivit
+	import php_site
+}
+
+# Antigo: catraca.zivit.com.br -> /var/www/bakery/public
+catraca.zivit.com.br {
+	root * /var/www/bakery/public
+	import php_site
+}

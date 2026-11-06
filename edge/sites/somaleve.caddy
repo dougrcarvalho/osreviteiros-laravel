@@ -1,0 +1,8 @@
+somaleve.zivit.com.br {
+	encode zstd gzip
+	request_body {
+		max_size 25MB
+	}
+	# O Caddy envia X-Forwarded-For/Proto/Host sozinho (o app usa TRUSTED_PROXIES=*).
+	reverse_proxy somaleve-app:8080
+}

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><defs>
+<radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFF4DA" stop-opacity="0.9"/><stop offset="1" stop-color="#FFF4DA" stop-opacity="0"/></radialGradient>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ECE7DF"/><stop offset="1" stop-color="#E2DBD0"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B07F55"/><stop offset="1" stop-color="#94673F"/></linearGradient>
+<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BDB3A4"/><stop offset="1" stop-color="#A99E8E"/></linearGradient>
+<linearGradient id="woodfloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C49A70"/><stop offset="1" stop-color="#A97F57"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C9CED3"/><stop offset="0.5" stop-color="#E6E9EC"/><stop offset="1" stop-color="#BFC5CB"/></linearGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFD9E8"/><stop offset="1" stop-color="#E8F1F4"/></linearGradient>
+<linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D6E6EE"/><stop offset="1" stop-color="#B9D0DC"/></linearGradient>
+</defs><rect width="800" height="600" fill="#C9C0B3"/>
+<rect width="800" height="60" fill="#D9D1C4"/>
+<path d="M150 230 L60 600 H240z" fill="#FFF4DA" opacity="0.35"/><path d="M400 260 L290 600 H510z" fill="#FFF4DA" opacity="0.35"/><path d="M650 230 L560 600 H740z" fill="#FFF4DA" opacity="0.35"/>
+<line x1="150" y1="60" x2="150" y2="190" stroke="#3B3B3B" stroke-width="2"/><circle cx="150" cy="215" r="70" fill="url(#glow)"/><path d="M110 190 h80 l18 40 h-116z" fill="#B48E57"/>
+<line x1="400" y1="60" x2="400" y2="200" stroke="#3B3B3B" stroke-width="2"/><circle cx="400" cy="240" r="90" fill="url(#glow)"/><circle cx="400" cy="235" r="40" fill="#FFF7E6"/><circle cx="400" cy="235" r="40" fill="none" stroke="#E9DCC2" stroke-width="3"/>
+<line x1="650" y1="60" x2="650" y2="190" stroke="#3B3B3B" stroke-width="2"/><circle cx="650" cy="215" r="70" fill="url(#glow)"/><path d="M610 190 h80 l18 40 h-116z" fill="#2E2E2E"/>
+<circle cx="140" cy="230" r="10" fill="#FFF2CF"/><circle cx="660" cy="230" r="10" fill="#FFF2CF"/>
+<rect y="520" width="800" height="80" fill="#CFC6B8"/>
+<ellipse cx="150" cy="560" rx="80" ry="10" fill="#FFF4DA" opacity="0.6"/><ellipse cx="400" cy="560" rx="100" ry="12" fill="#FFF4DA" opacity="0.6"/><ellipse cx="650" cy="560" rx="80" ry="10" fill="#FFF4DA" opacity="0.6"/></svg>

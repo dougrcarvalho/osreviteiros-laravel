@@ -1,0 +1,9 @@
+# Copiar para /root/web/edge/sites/osreviteiros.caddy
+osreviteiros.zivit.com.br {
+	encode zstd gzip
+	request_body {
+		max_size 520MB
+	}
+	# O Caddy envia X-Forwarded-*; o app confia nos proxies (bootstrap/app.php).
+	reverse_proxy osreviteiros-app:8080
+}

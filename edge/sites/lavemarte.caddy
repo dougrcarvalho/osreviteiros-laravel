@@ -1,0 +1,4 @@
+lavemarte.com.br, www.lavemarte.com.br {
+	root * /var/www/lavemarte
+	import php_site
+}

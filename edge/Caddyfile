@@ -1,0 +1,33 @@
+# Borda única da VPS: único projeto que publica 80/443. Cada site fica em sites/<site>.caddy.
+# HTTPS (Let's Encrypt), redirect http->https e renovação são automáticos.
+{
+	email {$ACME_EMAIL}
+}
+
+# Site PHP-FPM legado (container `php`, alias `php-legacy` na rede `proxy`).
+# O `root` de cada site é definido no arquivo do site e precisa ser o mesmo caminho
+# montado no container php (/var/www/<site>), senão o SCRIPT_FILENAME não bate.
+(php_site) {
+	encode zstd gzip
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	# O nginx só negava dotfiles na porta 80; aqui vale para todo o site (exceto ACME/.well-known).
+	@dotfiles {
+		path_regexp \/\.
+		not path /.well-known/*
+	}
+
+	route {
+		respond @dotfiles 404
+		php_fastcgi php-legacy:9000 {
+			try_files {path} {path}/index.html {path}/index.php index.php
+		}
+		file_server
+	}
+}
+
+import sites/*.caddy

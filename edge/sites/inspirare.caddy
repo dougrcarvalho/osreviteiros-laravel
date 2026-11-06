@@ -1,0 +1,4 @@
+studioinspirarepilates.com.br, www.studioinspirarepilates.com.br {
+	root * /var/www/inspirare
+	import php_site
+}

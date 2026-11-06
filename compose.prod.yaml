@@ -1,0 +1,44 @@
+# Homologação em osreviteiros.zivit.com.br (VPS: /root/web/osreviteiros).
+# O app entra na rede externa `proxy` (alias osreviteiros-app); o MySQL fica só na rede interna.
+# Não publica portas: quem recebe 80/443 é o Caddy de /root/web/edge.
+services:
+    app:
+        build: .
+        image: osreviteiros-app
+        container_name: osreviteiros-app
+        restart: unless-stopped
+        env_file: .env
+        depends_on:
+            mysql:
+                condition: service_healthy
+        volumes:
+            - app-storage:/app/storage
+        networks:
+            default: {}
+            proxy:
+                aliases: [osreviteiros-app]
+
+    mysql:
+        image: mysql:8.4
+        container_name: osreviteiros-mysql
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+        volumes:
+            - mysql-data:/var/lib/mysql
+        healthcheck:
+            test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+
+networks:
+    proxy:
+        external: true
+
+volumes:
+    app-storage:
+    mysql-data:

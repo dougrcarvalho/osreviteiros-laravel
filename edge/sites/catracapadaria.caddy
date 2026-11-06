@@ -1,0 +1,10 @@
+catracapadaria.com.br {
+	root * /var/www/catracapadaria
+	import php_site
+}
+
+# Igual ao nginx antigo: o www respondia 404. Para redirecionar ao domínio principal, troque por:
+#   redir https://catracapadaria.com.br{uri} permanent
+www.catracapadaria.com.br {
+	respond 404
+}

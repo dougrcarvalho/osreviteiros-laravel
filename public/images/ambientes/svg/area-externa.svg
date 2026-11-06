@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><defs>
+<radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFF4DA" stop-opacity="0.9"/><stop offset="1" stop-color="#FFF4DA" stop-opacity="0"/></radialGradient>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ECE7DF"/><stop offset="1" stop-color="#E2DBD0"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B07F55"/><stop offset="1" stop-color="#94673F"/></linearGradient>
+<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BDB3A4"/><stop offset="1" stop-color="#A99E8E"/></linearGradient>
+<linearGradient id="woodfloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C49A70"/><stop offset="1" stop-color="#A97F57"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C9CED3"/><stop offset="0.5" stop-color="#E6E9EC"/><stop offset="1" stop-color="#BFC5CB"/></linearGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFD9E8"/><stop offset="1" stop-color="#E8F1F4"/></linearGradient>
+<linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D6E6EE"/><stop offset="1" stop-color="#B9D0DC"/></linearGradient>
+</defs><rect width="800" height="600" fill="url(#sky)"/>
+<rect y="300" width="800" height="40" fill="#8FAE84"/>
+<ellipse cx="120" cy="300" rx="140" ry="70" fill="#7E9F73"/><ellipse cx="330" cy="310" rx="120" ry="50" fill="#89A97D"/><ellipse cx="700" cy="300" rx="160" ry="80" fill="#759868"/>
+<rect y="340" width="800" height="260" fill="url(#woodfloor)"/>
+<line x1="0" y1="370" x2="800" y2="370" stroke="#9C744E" stroke-width="2"/><line x1="0" y1="404" x2="800" y2="404" stroke="#9C744E" stroke-width="2"/><line x1="0" y1="438" x2="800" y2="438" stroke="#9C744E" stroke-width="2"/><line x1="0" y1="472" x2="800" y2="472" stroke="#9C744E" stroke-width="2"/><line x1="0" y1="506" x2="800" y2="506" stroke="#9C744E" stroke-width="2"/><line x1="0" y1="540" x2="800" y2="540" stroke="#9C744E" stroke-width="2"/><line x1="0" y1="574" x2="800" y2="574" stroke="#9C744E" stroke-width="2"/>
+<path d="M0 470 h420 l-40 130 h-380z" fill="#7FC1D6"/><path d="M0 470 h420 l-6 18 h-414z" fill="#F4F1EC"/>
+<path d="M30 520 q30 -10 60 0 t60 0" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="4" fill="none"/><path d="M200 560 q30 -10 60 0 t60 0" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="4" fill="none"/>
+<line x1="600" y1="160" x2="600" y2="470" stroke="#6B4B2E" stroke-width="6"/>
+<path d="M470 190 Q600 90 730 190 z" fill="#F4ECDD"/><path d="M470 190 Q535 170 600 190 Q665 170 730 190" fill="none" stroke="#D9CFC2" stroke-width="4"/>
+<ellipse cx="600" cy="470" rx="110" ry="8" fill="#000" opacity="0.08"/>
+<path d="M500 420 l150 -10 l40 -70" stroke="#6B4B2E" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M504 404 h140 l42 -66" stroke="#F6F4F0" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="510" y1="420" x2="510" y2="460" stroke="#6B4B2E" stroke-width="6"/><line x1="640" y1="412" x2="650" y2="460" stroke="#6B4B2E" stroke-width="6"/>
+<g transform="translate(740 470) scale(0.85)">
+<path d="M-37 -66 h74 l-8 66 h-58z" fill="#F1EEE8"/>
+<path d="M0 -66 C-5 -128 -35 -168 -63 -188" stroke="#5B7A52" stroke-width="4" fill="none"/>
+<ellipse cx="-55" cy="-168" rx="34" ry="14" transform="rotate(35 -55 -168)" fill="#6E8B63"/>
+<path d="M0 -66 C5 -138 30 -188 55 -213" stroke="#5B7A52" stroke-width="4" fill="none"/>
+<ellipse cx="45" cy="-198" rx="36" ry="14" transform="rotate(-40 45 -198)" fill="#5E7D55"/>
+<path d="M0 -66 C0 -118 -5 -158 3 -208" stroke="#5B7A52" stroke-width="4" fill="none"/>
+<ellipse cx="3" cy="-206" rx="34" ry="13" transform="rotate(-80 3 -206)" fill="#7A9A6E"/>
+<ellipse cx="-30" cy="-118" rx="30" ry="12" transform="rotate(25 -30 -118)" fill="#5E7D55"/>
+<ellipse cx="33" cy="-133" rx="30" ry="12" transform="rotate(-30 33 -133)" fill="#6E8B63"/>
+</g></svg>
