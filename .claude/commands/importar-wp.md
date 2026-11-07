@@ -1,57 +1,30 @@
 # Comando: /importar-wp
 
-Guia de importação dos dados do WordPress para o banco Laravel.
+Importação do WordPress para o Laravel. Plano completo (usuários, texturas, projetos): `docs/specs/importacao-wp.md`.
 
-## Passo a passo
+## Itens (famílias, texturas, projetos) — implementado
 
-### 1. Exportar dados do WordPress
-
-No painel WP Admin:
-- Ferramentas → Exportar → Exportar tudo → Baixar arquivo XML
-
-Ou via WP-CLI:
-```bash
-wp export --dir=/tmp/wp-export --post_type=familias
-wp export --dir=/tmp/wp-export --post_type=all  # usuários + taxonomias
-```
-
-### 2. Rodar o comando de importação
+1. No WP: Ferramentas → Exportar (um XML por tipo de conteúdo; inclua os anexos para as imagens).
+2. Copie o XML para a raiz do projeto (o `--file` é relativo a ela; XMLs não vão para o git).
+3. Rode via Sail (local) ou `docker compose -f compose.prod.yaml exec app` (VPS):
 
 ```bash
-# Importar categorias e taxonomias primeiro
-php artisan reviteiros:importar-categorias --xml=wp-export.xml
-
-# Importar fabricantes (selecionar-marca)
-php artisan reviteiros:importar-fabricantes --xml=wp-export.xml
-
-# Importar famílias com metadados
-php artisan reviteiros:importar-familias --xml=wp-export.xml
-
-# Importar usuários (sem senhas — exige reset)
-php artisan reviteiros:importar-usuarios --xml=wp-export.xml
+php artisan reviteiros:import-wp --file=familias-export.xml --dry-run            # confere sem gravar
+php artisan reviteiros:import-wp --file=familias-export.xml --ativar             # famílias (post-type padrão: familias)
+php artisan reviteiros:import-wp --file=texturas.xml --tipo=textura --post-type=<cpt> --ativar
+php artisan reviteiros:import-wp --file=projetos.xml --tipo=projeto --post-type=<cpt> --ativar
 ```
 
-### 3. Mapeamento de roles WP → planos Laravel
+Opções: `--ativar` (rascunhos entram ativos), `--sem-imagens`, `--dry-run`. Idempotente (`wp_post_id`).
+Termos são mapeados por `taxonomias.wp_taxonomia`; aviso "taxonomia WP sem equivalente" = falta preencher esse campo.
+Imagens vêm de `WP_URL` (padrão osreviteiros.com.br); mídia de rascunho exige `WP_API_USER` + `WP_API_APP_PASSWORD`.
+`link_download` é gravado como veio do WP (URL absoluta).
 
-| Role WP | Plano Laravel |
-|---|---|
-| `usurio_grtis` | `gratis` |
-| `reviteiroa_basic` | `basic` |
-| `reviteiro_plus` | `plus` |
-| `reviteiro_premium` | `premium` |
+## Usuários — ainda não implementado
+Ver "Plano 1" em `docs/specs/importacao-wp.md` (roles → planos via `planos.wp_role`, `AssinaturaService`, senhas phpass).
 
-### 4. Verificar importação
-
+## Verificar
 ```bash
 php artisan tinker
->>> Familia::count()     # deve bater com o total WP
->>> Categoria::count()   # todas taxonomias
->>> User::count()        # todos usuários
+>>> App\Models\Familia::selectRaw('tipo, count(*) n')->groupBy('tipo')->get()
 ```
-
-## Notas
-
-- Senhas WP usam hash phppass — **incompatível** com bcrypt do Laravel
-- Enviar e-mail de "reset de senha" para todos após importação
-- Imagens: o `imagem_url` aponta para o WP; após migração, fazer upload para novo storage (S3 ou local)
-- `link_download` contém URLs absolutas — manter como estão inicialmente

@@ -27,9 +27,17 @@ Pré-requisito: leia `/root/web/edge/NOVO-SITE.md` (receita "App em container pr
   `docker compose -f compose.prod.yaml exec app php artisan db:seed --class=DemoSeeder --force`
   (o `DatabaseSeeder` só chama o demo em ambiente local; o DemoSeeder pode ser rodado direto).
 - Primeiro administrador: criar via `php artisan tinker` (campo `users.funcao = 'administrador'`; confira os valores em `app/Models/User.php`).
-- Arquivos reais (zips e imagens, ~600 MB em `storage/app`) não vão no git. Se precisar, enviar com
-  `rsync`/`scp` para o volume `app-storage` (`/app/storage/app` no container; dono `www-data`).
-- Importação do WP (`familias-export.xml`, 73 MB, fora do git): `reviteiros:import-wp --file=...` depois de copiar o XML.
+- **Importar o catálogo do WordPress** (detalhes e plano de usuários/texturas/projetos: `docs/specs/importacao-wp.md`):
+  1. Copiar o XML para o volume (não vai no git; o `--file` é relativo a `/app`):
+     `scp familias-export.xml vps:/root/web/osreviteiros/` e
+     `docker compose -f compose.prod.yaml cp familias-export.xml app:/app/storage/app/familias-export.xml`
+  2. Teste: `docker compose -f compose.prod.yaml exec app php artisan reviteiros:import-wp --file=storage/app/familias-export.xml --dry-run | tail`
+  3. Real, em segundo plano (baixa ~5,7 mil imagens de osreviteiros.com.br; 15–30 min; a VPS precisa de saída para a internet):
+     `docker compose -f compose.prod.yaml exec -d app sh -c 'php artisan reviteiros:import-wp --file=storage/app/familias-export.xml --ativar > storage/logs/import.log 2>&1'`
+  4. Texturas e projetos: `--tipo=textura|projeto --post-type=<cpt do WP>` com o XML de cada um (pendente: levantar os post types e preencher `taxonomias.wp_taxonomia`).
+  5. Mídia de rascunhos exige `WP_API_USER` e `WP_API_APP_PASSWORD` no `.env` (recriar o container após editar).
+- **Usuários:** ainda não há importador (plano no spec acima). Não vêm no XML de itens.
+- Arquivos de download (zips): `link_download` mantém a URL do WP. Para subir os zips reais, enviar por `rsync` ao volume `app-storage` (`/app/storage/app/private`, dono `www-data`) ou pelo painel.
 
 ## Atualizar
 `git pull && docker compose -f compose.prod.yaml up -d --build`
