@@ -55,11 +55,14 @@ Sem `down -v`; não publicar 80/443; MySQL fora da rede `proxy`; não imprimir s
 ---
 ## Prompt para o Claude Code na VPS
 ````
-Leia /root/web/edge/NOVO-SITE.md e /root/web/osreviteiros/deploy/DEPLOY-VPS.md e siga-os.
-Site novo: osreviteiros.zivit.com.br (homologação), app Laravel em container (FrankenPHP, porta interna 8080, alias osreviteiros-app), upload máximo 520MB.
-1. Verifique `docker ps`, `docker logs --tail 20 caddy` e `dig +short osreviteiros.zivit.com.br`.
-2. Clone/atualize o repo em /root/web/osreviteiros, crie o .env a partir de .env.production.example (gere senhas fortes e a APP_KEY; não imprima segredos) e suba com compose.prod.yaml.
-3. Copie deploy/osreviteiros.caddy para /root/web/edge/sites/, rode `caddy validate` e só então `caddy reload` (sem recriar o Caddy).
-4. Teste com curl -sI https://osreviteiros.zivit.com.br/up e com --resolve, e me diga status e certificado.
-Regras: não derrube outros sites, sem `down -v`, não mexa em outros sites. Se algo fugir do roteiro, pare e pergunte.
+Leia /root/web/edge/NOVO-SITE.md e /root/web/osreviteiros/deploy/DEPLOY-VPS.md e siga-os para publicar a homologação osreviteiros.zivit.com.br (app Laravel em container, FrankenPHP, porta interna 8080, alias osreviteiros-app, upload até 520MB). O repositório já está clonado em /root/web/osreviteiros.
+
+Faça, nesta ordem, parando para me avisar se algo fugir do roteiro:
+1. Verifique `docker ps`, `docker logs --tail 20 caddy` e `dig +short osreviteiros.zivit.com.br` (deve apontar para esta VPS).
+2. Crie o .env a partir de .env.production.example: gere senhas fortes para o banco e a APP_KEY (comando no DEPLOY-VPS.md). Não imprima segredos.
+3. `docker compose -f compose.prod.yaml up -d --build` e confirme que o app subiu e as migrations rodaram (`docker logs osreviteiros-app`).
+4. Copie deploy/osreviteiros.caddy para /root/web/edge/sites/, rode `caddy validate` e só então `caddy reload` (sem recriar o Caddy).
+5. Teste `curl -sI https://osreviteiros.zivit.com.br/up` (e com --resolve) e me diga status e se o certificado foi emitido.
+6. NÃO rode as importações ainda. Eu vou enviar a pasta import/ (contém hashes de senha) e então peço a importação; quando eu pedir, siga a seção "Importar do WordPress" do DEPLOY-VPS.md (primeiro --dry-run, depois projetos, texturas, famílias e, por último, usuários) e, ao terminar, apague a pasta import/.
+Regras: não derrube os outros sites, sem `down -v`, não mexa no código de outros sites, não publique portas 80/443 neste projeto.
 ````
