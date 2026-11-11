@@ -48,7 +48,8 @@ class PasswordResetController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill([
-                    'password'       => $password,
+                    'password'         => $password,
+                    'wp_password_hash' => null,
                     'remember_token' => Str::random(60),
                 ])->save();
 

@@ -27,16 +27,23 @@ Pré-requisito: leia `/root/web/edge/NOVO-SITE.md` (receita "App em container pr
   `docker compose -f compose.prod.yaml exec app php artisan db:seed --class=DemoSeeder --force`
   (o `DatabaseSeeder` só chama o demo em ambiente local; o DemoSeeder pode ser rodado direto).
 - Primeiro administrador: criar via `php artisan tinker` (campo `users.funcao = 'administrador'`; confira os valores em `app/Models/User.php`).
-- **Importar o catálogo do WordPress** (detalhes e plano de usuários/texturas/projetos: `docs/specs/importacao-wp.md`):
-  1. Copiar o XML para o volume (não vai no git; o `--file` é relativo a `/app`):
-     `scp familias-export.xml vps:/root/web/osreviteiros/` e
-     `docker compose -f compose.prod.yaml cp familias-export.xml app:/app/storage/app/familias-export.xml`
-  2. Teste: `docker compose -f compose.prod.yaml exec app php artisan reviteiros:import-wp --file=storage/app/familias-export.xml --dry-run | tail`
-  3. Real, em segundo plano (baixa ~5,7 mil imagens de osreviteiros.com.br; 15–30 min; a VPS precisa de saída para a internet):
-     `docker compose -f compose.prod.yaml exec -d app sh -c 'php artisan reviteiros:import-wp --file=storage/app/familias-export.xml --ativar > storage/logs/import.log 2>&1'`
-  4. Texturas e projetos: `--tipo=textura|projeto --post-type=<cpt do WP>` com o XML de cada um (pendente: levantar os post types e preencher `taxonomias.wp_taxonomia`).
-  5. Mídia de rascunhos exige `WP_API_USER` e `WP_API_APP_PASSWORD` no `.env` (recriar o container após editar).
-- **Usuários:** ainda não há importador (plano no spec acima). Não vêm no XML de itens.
+- **Importar do WordPress** (detalhes: `docs/specs/importacao-wp.md`). Os arquivos de `import/` não vão no git (nem na imagem): enviar e copiar para o volume.
+  1. `scp -r import vps:/root/web/osreviteiros/import` e
+     `docker compose -f compose.prod.yaml cp import app:/app/import` (como root; depois `docker compose -f compose.prod.yaml exec -u root app chown -R www-data /app/import`)
+  2. Ensaio: `docker compose -f compose.prod.yaml exec app php artisan reviteiros:import-wp --file=import/texturas.2026-11-11.xml --tipo=textura --post-type=texturas --dry-run | tail`
+  3. Real, em segundo plano (baixa as imagens de osreviteiros.com.br: a VPS precisa de saída para a internet; famílias levam de 15 a 30 min). Comece por texturas e projetos (rápidos), depois famílias:
+     ```
+     docker compose -f compose.prod.yaml exec -d app sh -c '
+       php artisan reviteiros:import-wp --file=import/projetos-2126-11-11.xml --tipo=projeto --post-type=projetos-prontos --ativar &&
+       php artisan reviteiros:import-wp --file=import/texturas.2026-11-11.xml --tipo=textura --post-type=texturas --ativar &&
+       php artisan reviteiros:import-wp --file="import/familias.2026-11-11(2).xml" --ativar
+     ' > /dev/null
+     ```
+     (para registrar a saída, redirecione dentro do `sh -c` para `storage/logs/import.log`)
+  4. Usuários, por último: `... exec app php artisan reviteiros:import-usuarios --users=import/wp_users.sql --meta=import/wp_usermeta.sql` (use `--dry-run` antes).
+  5. Conferir no painel e testar login com uma conta antiga de cada plano (a senha do WP vira bcrypt no 1º login).
+  6. **Apagar `import/`** da VPS e do container (`rm -rf import`): contém hashes de senha.
+  7. Mídia de rascunhos exige `WP_API_USER` e `WP_API_APP_PASSWORD` no `.env` (recriar o container após editar).
 - Arquivos de download (zips): `link_download` mantém a URL do WP. Para subir os zips reais, enviar por `rsync` ao volume `app-storage` (`/app/storage/app/private`, dono `www-data`) ou pelo painel.
 
 ## Atualizar

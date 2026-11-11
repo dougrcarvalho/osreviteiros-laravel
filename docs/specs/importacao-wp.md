@@ -6,64 +6,47 @@ Opções: `--file` (relativo à raiz do projeto), `--tipo=familia|textura|projet
 Mapeia termos pelo `taxonomias.wp_taxonomia`; marca → `Fabricante`; baixa a imagem de destaque para o disco público.
 `familias-export.xml` tem só `familias` (5.689) + anexos (5.952) e 12 `wp:author` (sem roles nem senhas).
 
-## Plano 1 — Usuários com planos (roles)
-
-**Fonte dos dados.** O XML do WP **não** traz roles nem hash de senha. Extrair direto do banco do WP (ou WP-CLI):
-```
-wp user list --fields=ID,user_login,user_email,display_name,user_registered,roles,user_pass --format=csv > usuarios-wp.csv
-```
-(SQL equivalente: `wp_users` + `wp_usermeta` onde `meta_key = 'wp_capabilities'`; ajustar o prefixo.)
-Arquivo contém hashes: não versionar, transferir por scp e apagar após a importação.
-Pontos a confirmar no WP: (a) o plugin de assinaturas (os metadados `ihc_*` indicam Indeed Ultimate Membership Pro) guarda nível/validade em tabelas próprias — checar se o role reflete a assinatura vigente; (b) usuários com mais de um role.
-
-**Mapeamento role → plano** (já em `planos.wp_role`, via `PlanoSeeder`):
-| Role WP | Plano |
+## Arquivos de entrada (pasta `import/`, fora do git e do Docker)
+| Arquivo | Conteúdo |
 |---|---|
-| `usurio_grtis` | gratis |
-| `reviteiroa_basic` | basic |
-| `reviteiro_plus` | plus (descontinuado, tratado como Basic) |
-| `reviteiro_premium` | premium |
-| `administrator` / `editor` / outros | **não** viram plano nem função automaticamente: listar no relatório e decidir (funcionário = `users.funcao`, criado à mão ou por opção `--funcionarios`) |
-| sem role conhecido | gratis + aviso no relatório |
+| `familias.2026-11-11(2).xml` | 5.768 famílias (post type `familias`) + anexos |
+| `texturas.2026-11-11.xml` | 567 texturas (`texturas`), taxonomias `categoria-de-texturas` e `marca-de-texturas` |
+| `projetos-2126-11-11.xml` | 29 projetos (`projetos-prontos`), taxonomias `selecione-o-projeto` (categoria) e `selecione-o-tipo-do-projeto` (tipo) |
+| `wp_users.sql`, `wp_usermeta.sql` | 23.132 usuários, com roles e hashes de senha (**sensível**: nunca versionar; apagar da VPS após importar) |
 
-**Comando novo `reviteiros:import-usuarios --file=usuarios-wp.csv [--dry-run] [--enviar-reset]`**
-1. Ler o CSV; normalizar e-mail (trim/lowercase); pular e-mail inválido ou duplicado (relatório).
-2. Idempotência: chave `wp_user_id` (coluna já existe), com fallback por e-mail.
-3. Criar/atualizar `users`: `name` (display_name ou login), `email`, `wp_user_id`, `created_at = user_registered`, `status = ativo`, `funcao = null`.
-4. Plano **somente** via `AssinaturaService::alterarPlano($user, $plano, OrigemPlano::Importacao, referencia: "wp:{id}")` (grava `plano_historicos`; auditoria em lote com `semRegistro()`).
-5. Reexecução não rebaixa nem altera plano de quem já mudou por webhook/painel: só aplica plano se o usuário é novo ou ainda está no plano vindo de importação anterior.
-6. Relatório final: totais por plano, ignorados (motivo), roles desconhecidos, contas de equipe encontradas.
+## Itens: mapeamento por tipo (implementado)
+| | Família | Textura | Projeto |
+|---|---|---|---|
+| Link de download | `link_download` | `download-links` | `link-download` → `_todosarquivos` → `arquivo-rvt` |
+| Gratuita | `baixar-gratis` preenchido | termo `acessar-gratis` ou `download-gratis` preenchido | — |
+| Imagem | `_thumbnail_id` | `_thumbnail_id` | 1º id de `imagem-1`/`imagens-projeto` (sem destaque) |
+| Taxonomias | categorias, subcategorias, subclassificacao, selecionar-marca | categoria-de-texturas, marca-de-texturas | selecione-o-projeto, selecione-o-tipo-do-projeto |
+O termo "ACESSAR GRÁTIS" não vira termo: marca `gratuita` (como na migration de taxonomias). `TaxonomiaSeeder` preenche `wp_taxonomia` de textura/projeto (também em bancos já existentes).
+Não importados (sem campo equivalente): metragem, quartos, suítes, banheiros, garagem e vídeo dos projetos; galeria de imagens além da primeira; autor.
 
-**Senhas (decisão necessária).**
-- Opção A (simples): `password` aleatório + e-mail de reset (`PasswordResetController` já existe e cita usuários do WP). Exige SMTP real e dispara e-mail em massa → enviar em lotes.
-- Opção B (melhor para o usuário): guardar o hash phpass (`$P$…`) numa coluna `wp_password_hash`; no login, se a senha bate com o phpass, regravar em bcrypt e apagar o hash legado. Sem e-mail em massa; exige implementar a verificação phpass (≈40 linhas) no fluxo de login e do Filament.
-- Recomendação: B, com A como contingência (link "esqueci a senha" já funciona).
-
-**Fora do escopo:** vencimento de assinatura (o sistema não tem; vale até webhook/funcionário trocar), curtidas/favoritos por usuário, histórico de downloads do WP.
-
-**Testes:** parser do CSV, mapeamento de roles, idempotência, não-rebaixamento, e-mail duplicado, `plano_historicos` com origem `importacao`.
-**Ensaio:** rodar com `--dry-run` no export real e conferir os totais por role contra o painel do WP antes de importar.
-
-## Plano 2 — Texturas e projetos
-
-**Pendências a levantar no WP (preciso de você):**
-1. Nome do *post type* de cada um (texturas, projetos prontos) e das taxonomias usadas por eles.
-2. Exportar cada tipo em Ferramentas → Exportar (um XML por tipo, mais os anexos) — ou "Todo o conteúdo", que traz os anexos das imagens.
-3. Meta de download: confirmar se também usam `link_download`/`baixar-gratis` (o comando lê essas chaves).
-
-**Ajustes no código:**
-1. `TaxonomiaSeeder`: hoje textura e projeto têm `wp_taxonomia = null`, então o import avisaria "taxonomia WP sem equivalente". Preencher com os slugs reais do WP (textura: categoria e marca; projeto: categoria e tipo). Como o seeder só cria o que falta, atualizar as já existentes por migration/`Taxonomia::where(...)->update(...)` ou pelo painel (Administração › Taxonomias).
-2. `ImportarWp`: aceitar o mesmo `DOMINIO_ALIAS` por tipo, se o WP usar domínios diferentes; sem outras mudanças previstas (já recebe `--tipo` e `--post-type`).
-3. Projetos são só Premium (`Plano::liberaTipo`): conferir que `link_download` dos projetos vem preenchido, pois sem o arquivo o botão falha.
-
-**Execução (VPS):**
+## Usuários (implementado): `reviteiros:import-usuarios`
 ```
-php artisan reviteiros:import-wp --file=... --tipo=textura --post-type=<cpt> --dry-run   # conferir avisos de taxonomia
-php artisan reviteiros:import-wp --file=... --tipo=textura --post-type=<cpt> --ativar
-php artisan reviteiros:import-wp --file=... --tipo=projeto --post-type=<cpt> --ativar
+php artisan reviteiros:import-usuarios --users=import/wp_users.sql --meta=import/wp_usermeta.sql [--dry-run] [--atualizar-planos]
 ```
-Marcas (`Fabricante`) são compartilhadas: o `firstOrCreate` por slug evita duplicar as já criadas pelas famílias.
-**Verificação:** contagem por tipo no painel vs. WP, itens sem imagem (aviso do comando), amostra de 10 itens por biblioteca (URL pública, filtros, download conforme o plano).
+- Lê os dumps SQL direto (`SqlDumpReader`, sem precisar de MySQL do WP). Roles de `wp_capabilities` → `planos.wp_role`; vários roles = plano mais alto.
+- Resultado do ensaio nos arquivos reais (23.132 linhas): 23.024 novos — grátis 22.287, basic 377, plus 57, premium 303; 516 sem role de plano (`subscriber`/vazio) → grátis.
+- Conta repetida pelo e-mail (104): fica a de maior plano (empate: a mais antiga). E-mail inválido/vazio (4): pulado. Nomes com acento corrompido ("FranÃ§a") são corrigidos.
+- Administradores do WP (11) entram como **clientes** com o plano que tinham; definir `funcao` no painel manualmente.
+- Plano dos novos: `plano_historicos` com origem `importacao` (gravado em lote). Reexecução não duplica (chave `wp_user_id`/e-mail) e não mexe em plano; `--atualizar-planos` só reaplica para quem ainda está no plano vindo da importação.
+- Qualquer usuário importado pode ser reimportado sem ressuscitar senha antiga: `wp_password_hash` só é gravado na criação.
 
-## Ordem sugerida
-1. Famílias (XML atual) → 2. levantar CPTs/taxonomias de texturas e projetos → 3. ajustar `wp_taxonomia` e importar → 4. extrair usuários, decidir senha (A/B) → 5. implementar e ensaiar `import-usuarios` → 6. importar usuários por último (evita e-mail de reset antes do catálogo estar no ar).
+### Senhas (plano B, implementado)
+`users.wp_password_hash` guarda o hash do WP (`$P$` phpass, `$wp$2y$` do WP 6.8+ ou MD5). `users.password` recebe um hash aleatório que ninguém conhece.
+No login (`UserProviderComSenhaWp`, vale para o site e para o `/admin`), se a senha confere com o hash do WP ela é regravada em bcrypt e o hash antigo é apagado. "Esqueci a senha" também apaga. Verificação em `App\Support\WpPasswordHasher` (testada com o vetor oficial do phpass).
+
+## Ordem de execução na VPS
+1. `migrate` (cria `wp_password_hash`) e seeders (entrypoint já faz).
+2. Famílias → texturas → projetos (`--ativar` opcional; ver `deploy/DEPLOY-VPS.md`).
+3. Usuários por último.
+4. Conferir contagens no painel e fazer login com uma conta antiga de cada plano.
+5. Apagar `import/` da VPS (contém hashes de senha).
+
+## Pendências / decisões
+- Texturas: 23 itens têm `download-gratis` preenchido e 20 têm o termo `acessar-gratis`; entram como gratuitas pela união. Confirmar se 23 é o esperado.
+- Status `private` (266 famílias) e `draft` entram inativos, a menos que use `--ativar`.
+- Login por e-mail: contas WP sem e-mail válido (4) não entram.

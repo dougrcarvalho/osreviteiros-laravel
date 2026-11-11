@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Services\AuditoriaService;
+use App\Auth\UserProviderComSenhaWp;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Aceita a senha do WordPress dos usuários importados (convertida no 1º login)
+        Auth::provider('eloquent-wp', fn ($app, array $config) => new UserProviderComSenhaWp($app['hash'], $config['model']));
     }
 }

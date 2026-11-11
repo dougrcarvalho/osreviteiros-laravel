@@ -20,8 +20,20 @@ Termos são mapeados por `taxonomias.wp_taxonomia`; aviso "taxonomia WP sem equi
 Imagens vêm de `WP_URL` (padrão osreviteiros.com.br); mídia de rascunho exige `WP_API_USER` + `WP_API_APP_PASSWORD`.
 `link_download` é gravado como veio do WP (URL absoluta).
 
-## Usuários — ainda não implementado
-Ver "Plano 1" em `docs/specs/importacao-wp.md` (roles → planos via `planos.wp_role`, `AssinaturaService`, senhas phpass).
+Arquivos prontos em `import/` (famílias, texturas, projetos, wp_users.sql, wp_usermeta.sql); tipos e campos por biblioteca em `docs/specs/importacao-wp.md`.
+
+```bash
+php artisan reviteiros:import-wp --file="import/familias.2026-11-11(2).xml" --ativar
+php artisan reviteiros:import-wp --file=import/texturas.2026-11-11.xml --tipo=textura --post-type=texturas --ativar
+php artisan reviteiros:import-wp --file=import/projetos-2126-11-11.xml --tipo=projeto --post-type=projetos-prontos --ativar
+```
+
+## Usuários (roles → planos, senha do WP preservada)
+```bash
+php artisan reviteiros:import-usuarios --users=import/wp_users.sql --meta=import/wp_usermeta.sql --dry-run
+php artisan reviteiros:import-usuarios --users=import/wp_users.sql --meta=import/wp_usermeta.sql
+```
+O hash do WP vira bcrypt no primeiro login (`UserProviderComSenhaWp`). Rodar por último; apagar `import/` depois (hashes de senha).
 
 ## Verificar
 ```bash

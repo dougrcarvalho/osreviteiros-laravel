@@ -23,12 +23,12 @@ class TaxonomiaSeeder extends Seeder
             ['marca', 'Marca', 'Marcas', 'cat', 'fabricante', 'selecionar-marca'],
         ],
         'textura' => [
-            ['cat', 'Categoria', 'Categorias', null, 'termos', null],
-            ['marca', 'Marca', 'Marcas', 'cat', 'fabricante', null],
+            ['cat', 'Categoria', 'Categorias', null, 'termos', 'categoria-de-texturas'],
+            ['marca', 'Marca', 'Marcas', 'cat', 'fabricante', 'marca-de-texturas'],
         ],
         'projeto' => [
-            ['cat', 'Categoria', 'Categorias', null, 'termos', null],
-            ['tipo', 'Tipo', 'Tipos', null, 'termos', null],
+            ['cat', 'Categoria', 'Categorias', null, 'termos', 'selecione-o-projeto'],
+            ['tipo', 'Tipo', 'Tipos', null, 'termos', 'selecione-o-tipo-do-projeto'],
         ],
     ];
 
@@ -49,6 +49,11 @@ class TaxonomiaSeeder extends Seeder
                         'wp_taxonomia' => $wp,
                     ],
                 );
+
+                // Bases já criadas antes do vínculo com o WordPress: completa só se estiver vazio
+                if ($wp && ! $taxonomia->wp_taxonomia) {
+                    $taxonomia->update(['wp_taxonomia' => $wp]);
+                }
 
                 $ids[$slug] = $taxonomia->id;
             }

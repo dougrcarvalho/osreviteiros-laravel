@@ -87,14 +87,27 @@ class ImportarWp extends Command
         $meta   = $item['meta'];
         $slug   = $item['slug'] ?: Str::slug($item['titulo']);
         $ativo  = $this->option('ativar') || $item['status'] === 'publish';
-        $link   = $meta['link_download'] ?? '' ?: ($meta['link-download'] ?? '');
-        $gratis = ($meta['baixar-gratis'] ?? '') !== '' || ($meta['download_free'] ?? '') !== '';
+        // Nomes dos campos variam por tipo de conteúdo no WP
+        $link = match ($tipo) {
+            TipoItem::Textura => $meta['download-links'] ?? '',
+            TipoItem::Projeto => ($meta['link-download'] ?? '') ?: ($meta['_todosarquivos'] ?? '') ?: ($meta['arquivo-rvt'] ?? ''),
+            default           => ($meta['link_download'] ?? '') ?: ($meta['link-download'] ?? ''),
+        };
+        $gratis = ($meta['baixar-gratis'] ?? '') !== '' || ($meta['download_free'] ?? '') !== ''
+            || ($tipo === TipoItem::Textura && ($meta['download-gratis'] ?? '') !== '');
 
         // Termos do WP agrupados por taxonomia do Laravel
         $porTaxonomia = [];
         $marca        = null;
 
         foreach ($item['termos'] as $t) {
+            // "ACESSAR GRÁTIS" era um termo no WP; aqui é o campo `gratuita`
+            if ($t['slug'] === 'acessar-gratis') {
+                $gratis = true;
+
+                continue;
+            }
+
             $dominio = self::DOMINIO_ALIAS[$t['dominio']] ?? $t['dominio'];
             $taxo    = $this->taxonomias[$dominio] ?? null;
 
@@ -148,7 +161,10 @@ class ImportarWp extends Command
         $servico->sincronizarCategorias($familia, $termoIds);
 
         if (! $this->option('sem-imagens')) {
-            $this->baixarImagem($familia, (int) ($meta['_thumbnail_id'] ?? 0), $anexos);
+            // Projetos não têm imagem de destaque: usa a primeira da galeria (ids separados por vírgula)
+            $thumb = (int) ($meta['_thumbnail_id'] ?? 0)
+                ?: (int) explode(',', ($meta['imagem-1'] ?? '') ?: ($meta['imagens-projeto'] ?? ''))[0];
+            $this->baixarImagem($familia, $thumb, $anexos);
         }
     }
 
