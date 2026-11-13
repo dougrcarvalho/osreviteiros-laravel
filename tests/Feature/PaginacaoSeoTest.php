@@ -127,9 +127,9 @@ class PaginacaoSeoTest extends TestCase
         $this->categoria('Automóveis');
 
         Livewire::test(FamiliaGrid::class, ['biblioteca' => 'familia', 'query' => [], 'pagina' => 2])
-            ->call('alternarGratis')
+            ->call('alternarRecurso', 'gratis')
             ->assertSet('paginaInicial', 1)
-            ->assertDispatched('rv-url', url: $this->u('/familias-revit?gratis=1'), push: true);
+            ->assertDispatched('rv-url', url: $this->u('/familias-revit?recurso=gratis'), push: true);
     }
 
     public function test_voltar_do_navegador_restaura_a_pagina(): void

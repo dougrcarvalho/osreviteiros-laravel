@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Atrás do Caddy da borda (HTTPS termina lá): confiar em X-Forwarded-*
         $middleware->trustProxies(at: '*');
 
+        // Idioma pelo prefixo da URL (antes do roteamento)
+        $middleware->prepend(\App\Http\Middleware\DefinirIdioma::class);
+
         $middleware->statefulApi();
 
         $middleware->web(append: [

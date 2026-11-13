@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ \App\Support\Idiomas::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,9 +8,10 @@
     <title>{{ $seo['title'] }}</title>
     <meta name="description" content="{{ $seo['description'] }}">
     <link rel="canonical" href="{{ $seo['canonical'] }}">
+    <x-hreflang />
 
     <meta property="og:type" content="website">
-    <meta property="og:locale" content="pt_BR">
+    <meta property="og:locale" content="{{ \App\Support\Idiomas::ogLocale() }}">
     <meta property="og:site_name" content="Os Reviteiros">
     <meta property="og:title" content="{{ $seo['title'] }}">
     <meta property="og:description" content="{{ $seo['description'] }}">
@@ -39,19 +40,19 @@
 <body>
 @php
     $pluginUrl = config('reviteiros.home.plugin_url');
-    $totalFamilias = number_format(config('reviteiros.home.total_familias'), 0, ',', '.');
+    $totalFamilias = \App\Support\Idiomas::numero(config('reviteiros.home.total_familias'));
     $links = [
-        ['Famílias', route('familias.index')],
-        ['Texturas', route('texturas.index')],
-        ['Projetos prontos', route('projetos.index')],
-        ['Templates', '#'],
-        ['Cursos', '#'],
-        ['Fabricantes', route('fabricantes.index')],
-        ['Planos', route('home').'#planos'],
+        [__('Famílias'), route('familias.index')],
+        [__('Texturas'), route('texturas.index')],
+        [__('Projetos prontos'), route('projetos.index')],
+        [__('Templates'), '#'],
+        [__('Cursos'), '#'],
+        [__('Fabricantes'), route('fabricantes.index')],
+        [__('Planos'), route('home').'#planos'],
     ];
 @endphp
 <div class="font-site leading-[normal] text-rv-ink bg-white min-h-screen">
-    <a href="#conteudo" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:shadow-lg">Pular para o conteúdo</a>
+    <a href="#conteudo" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:shadow-lg">{{ __('Pular para o conteúdo') }}</a>
 
     <header class="sticky top-0 z-30 border-b border-rv-line bg-white/95 backdrop-blur-sm xl:static">
         <div class="mx-auto max-w-rv px-4 md:px-6 h-[60px] xl:h-auto xl:py-[18px] flex items-center gap-1 xl:gap-x-6 xl:gap-y-4 xl:flex-nowrap">
@@ -64,64 +65,66 @@
                 @auth
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" aria-label="Sair da conta" class="flex size-11 items-center justify-center text-rv-ink cursor-pointer">
+                        <button type="submit" aria-label="{{ __('Sair da conta') }}" class="flex size-11 items-center justify-center text-rv-ink cursor-pointer">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" aria-label="Entrar na conta" class="flex size-11 items-center justify-center text-rv-ink">
+                    <a href="{{ route('login') }}" aria-label="{{ __('Entrar na conta') }}" class="flex size-11 items-center justify-center text-rv-ink">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>
                     </a>
                 @endauth
-                <button type="button" id="rv-menu-abrir" aria-label="Abrir menu" aria-controls="rv-menu" aria-expanded="false" class="flex size-11 items-center justify-center text-rv-ink cursor-pointer">
+                <button type="button" id="rv-menu-abrir" aria-label="{{ __('Abrir menu') }}" aria-controls="rv-menu" aria-expanded="false" class="flex size-11 items-center justify-center text-rv-ink cursor-pointer">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg>
                 </button>
             </div>
 
             {{-- 1280px ou mais: menu completo --}}
-            <nav aria-label="Principal" class="hidden xl:flex flex-wrap xl:flex-nowrap gap-x-[22px] gap-y-1.5 text-[15px] font-medium flex-auto xl:min-w-0">
+            <nav aria-label="{{ __('Principal') }}" class="hidden xl:flex flex-wrap xl:flex-nowrap gap-x-[22px] gap-y-1.5 text-[15px] font-medium flex-auto xl:min-w-0">
                 @foreach ($links as [$nome, $url])
                     <a href="{{ $url }}" class="rv-alvo whitespace-nowrap text-rv-body hover:text-rv-accent">{{ $nome }}</a>
                 @endforeach
             </nav>
 
             <div class="hidden xl:flex gap-2.5 items-center">
+                <x-seletor-idioma />
                 @auth
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="px-4 py-[11px] text-[15px] font-semibold text-rv-ink hover:text-rv-accent cursor-pointer">Sair</button>
+                        <button type="submit" class="px-4 py-[11px] text-[15px] font-semibold text-rv-ink hover:text-rv-accent cursor-pointer">{{ __('Sair') }}</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="px-4 py-[11px] text-[15px] font-semibold text-rv-ink hover:text-rv-accent">Entrar</a>
+                    <a href="{{ route('login') }}" class="px-4 py-[11px] text-[15px] font-semibold text-rv-ink hover:text-rv-accent">{{ __('Entrar') }}</a>
                 @endauth
-                <a href="{{ $pluginUrl }}" class="px-[18px] py-[11px] rounded-rv-btn bg-rv-accent hover:bg-rv-accent-hover text-white text-[15px] font-semibold">Baixar plugin grátis</a>
+                <a href="{{ $pluginUrl }}" class="px-[18px] py-[11px] rounded-rv-btn bg-rv-accent hover:bg-rv-accent-hover text-white text-[15px] font-semibold">{{ __('Baixar plugin grátis') }}</a>
             </div>
         </div>
     </header>
 
     {{-- Painel do menu (celular e tablet). Esc fecha e o foco fica dentro do painel. --}}
-    <dialog id="rv-menu" aria-label="Menu" class="fixed inset-y-0 right-0 m-0 h-dvh max-h-none w-[min(320px,88vw)] max-w-none bg-white p-0 text-rv-ink backdrop:bg-rv-ink/40">
+    <dialog id="rv-menu" aria-label="{{ __('Menu') }}" class="fixed inset-y-0 right-0 m-0 h-dvh max-h-none w-[min(320px,88vw)] max-w-none bg-white p-0 text-rv-ink backdrop:bg-rv-ink/40">
         <div class="flex h-full flex-col">
             <div class="flex h-[60px] flex-none items-center justify-between border-b border-rv-line pl-4 pr-2">
-                <span class="font-bold">Menu</span>
+                <span class="font-bold">{{ __('Menu') }}</span>
                 <form method="dialog">
-                    <button type="submit" aria-label="Fechar menu" class="flex size-11 items-center justify-center text-rv-ink cursor-pointer">
+                    <button type="submit" aria-label="{{ __('Fechar menu') }}" class="flex size-11 items-center justify-center text-rv-ink cursor-pointer">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>
                     </button>
                 </form>
             </div>
 
-            <nav aria-label="Menu principal" class="flex flex-col p-2">
+            <nav aria-label="{{ __('Menu principal') }}" class="flex flex-col p-2">
                 @foreach ($links as [$nome, $url])
                     <a href="{{ $url }}" class="flex min-h-12 items-center rounded-rv-btn px-3 text-base font-medium text-rv-body hover:bg-rv-alt">{{ $nome }}</a>
                 @endforeach
             </nav>
 
             <div class="mt-auto flex flex-col gap-2.5 border-t border-rv-line p-4">
+                <x-seletor-idioma lista />
                 @guest
-                    <a href="{{ route('login') }}" class="flex min-h-12 items-center justify-center rounded-rv-btn border border-rv-ink font-semibold text-rv-ink">Entrar</a>
+                    <a href="{{ route('login') }}" class="flex min-h-12 items-center justify-center rounded-rv-btn border border-rv-ink font-semibold text-rv-ink">{{ __('Entrar') }}</a>
                 @endguest
-                <a href="{{ $pluginUrl }}" class="flex min-h-12 items-center justify-center rounded-rv-btn bg-rv-accent font-bold text-white">Baixar plugin grátis</a>
+                <a href="{{ $pluginUrl }}" class="flex min-h-12 items-center justify-center rounded-rv-btn bg-rv-accent font-bold text-white">{{ __('Baixar plugin grátis') }}</a>
             </div>
         </div>
     </dialog>
@@ -136,34 +139,34 @@
                 <img src="{{ asset('images/logo/logo-horizontal-negativo.svg') }}" alt="Os Reviteiros" width="200" height="28" class="h-7 w-auto self-start lg:h-8">
             </div>
 
-            <nav aria-label="Rodapé" class="grid grid-cols-2 gap-x-4 lg:hidden">
-                <a href="{{ route('familias.index') }}" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">Famílias Revit</a>
-                <a href="{{ route('texturas.index') }}" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">Texturas</a>
-                <a href="{{ route('projetos.index') }}" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">Projetos prontos</a>
-                <a href="#" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">Cursos</a>
-                <a href="#" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">Para empresas</a>
-                <a href="#" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">Termos e privacidade</a>
+            <nav aria-label="{{ __('Rodapé') }}" class="grid grid-cols-2 gap-x-4 lg:hidden">
+                <a href="{{ route('familias.index') }}" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">{{ __('Famílias Revit') }}</a>
+                <a href="{{ route('texturas.index') }}" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">{{ __('Texturas') }}</a>
+                <a href="{{ route('projetos.index') }}" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">{{ __('Projetos prontos') }}</a>
+                <a href="#" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">{{ __('Cursos') }}</a>
+                <a href="#" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">{{ __('Para empresas') }}</a>
+                <a href="#" class="rv-alvo py-2.5 text-rv-footer-text hover:text-white">{{ __('Termos e privacidade') }}</a>
             </nav>
 
             <div class="hidden lg:col-span-3 lg:col-start-2 lg:row-start-1 lg:grid lg:grid-cols-3 lg:gap-8">
-                <nav aria-label="Biblioteca" class="flex flex-col gap-2 items-start">
-                    <strong class="text-white">Biblioteca</strong>
-                    <a href="{{ route('familias.index') }}" class="rv-alvo text-rv-footer-text hover:text-white">Famílias Revit</a>
-                    <a href="{{ route('texturas.index') }}" class="rv-alvo text-rv-footer-text hover:text-white">Texturas</a>
-                    <a href="{{ route('projetos.index') }}" class="rv-alvo text-rv-footer-text hover:text-white">Projetos prontos</a>
-                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">Templates</a>
+                <nav aria-label="{{ __('Biblioteca') }}" class="flex flex-col gap-2 items-start">
+                    <strong class="text-white">{{ __('Biblioteca') }}</strong>
+                    <a href="{{ route('familias.index') }}" class="rv-alvo text-rv-footer-text hover:text-white">{{ __('Famílias Revit') }}</a>
+                    <a href="{{ route('texturas.index') }}" class="rv-alvo text-rv-footer-text hover:text-white">{{ __('Texturas') }}</a>
+                    <a href="{{ route('projetos.index') }}" class="rv-alvo text-rv-footer-text hover:text-white">{{ __('Projetos prontos') }}</a>
+                    <a href="https://renderarchviz.com" class="rv-alvo text-rv-footer-text hover:text-white" target="_blank">{{ __('Render com IA') }}</a>
                 </nav>
-                <nav aria-label="Aprender" class="flex flex-col gap-2 items-start">
-                    <strong class="text-white">Aprender</strong>
-                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">Cursos</a>
-                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">Blog</a>
-                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">Tutoriais do plugin</a>
+                <nav aria-label="{{ __('Aprender') }}" class="flex flex-col gap-2 items-start">
+                    <strong class="text-white">{{ __('Aprender') }}</strong>
+                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">{{ __('Cursos') }}</a>
+                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">{{ __('Blog') }}</a>
+                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">{{ __('Tutoriais do plugin') }}</a>
                 </nav>
-                <nav aria-label="Empresa" class="flex flex-col gap-2 items-start">
-                    <strong class="text-white">Empresa</strong>
-                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">Para empresas</a>
-                    <a href="{{ config('reviteiros.home.whatsapp_url') }}" class="rv-alvo text-rv-footer-text hover:text-white">Suporte via WhatsApp</a>
-                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">Termos e privacidade</a>
+                <nav aria-label="{{ __('Empresa') }}" class="flex flex-col gap-2 items-start">
+                    <strong class="text-white">{{ __('Empresa') }}</strong>
+                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">{{ __('Para empresas') }}</a>
+                    <a href="{{ config('reviteiros.home.whatsapp_url') }}" class="rv-alvo text-rv-footer-text hover:text-white">{{ __('Suporte via WhatsApp') }}</a>
+                    <a href="#" class="rv-alvo text-rv-footer-text hover:text-white">{{ __('Termos e privacidade') }}</a>
                 </nav>
             </div>
 
@@ -174,10 +177,10 @@
     {{-- Barra fixa do celular: aparece depois do hero (ver rv-barra-acao.js) --}}
     <div id="rv-barra-acao" hidden class="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2.5 border-t border-rv-line bg-white/95 px-4 pt-2.5 pb-3.5 backdrop-blur-sm md:hidden">
         <div class="flex min-w-0 flex-auto flex-col">
-            <strong class="text-sm text-rv-ink">Comece grátis</strong>
-            <span class="text-xs text-rv-ink-3">{{ $totalFamilias }} famílias no Revit</span>
+            <strong class="text-sm text-rv-ink">{{ __('Comece grátis') }}</strong>
+            <span class="text-xs text-rv-ink-3">{{ __(':total famílias no Revit', ['total' => $totalFmt]) }}</span>
         </div>
-        <a href="{{ $pluginUrl }}" class="flex min-h-12 flex-none items-center rounded-rv-btn bg-rv-accent px-[18px] text-[15px] font-bold text-white">Baixar plugin</a>
+        <a href="{{ $pluginUrl }}" class="flex min-h-12 flex-none items-center rounded-rv-btn bg-rv-accent px-[18px] text-[15px] font-bold text-white">{{ __('Baixar plugin') }}</a>
     </div>
 </div>
 </body>

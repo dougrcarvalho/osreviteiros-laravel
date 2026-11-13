@@ -285,7 +285,7 @@ Usuários demo (senha `password`): `gratis@reviteiros.test`, `basic@reviteiros.t
 - **Taxonomias** (`taxonomias`, model `Taxonomia`): por `tipo_item`, com `slug` (parâmetro da URL), `pai_id` (só aparece após o pai), `ordem`, `ativa` e `fonte` (`termos` = lista própria em `categorias`; `fabricante` = tabela `fabricantes`). Slugs reservados: `Taxonomia::RESERVADOS`; `marca` só pode ser de fonte fabricante. Sempre consultar via `TaxonomiaService::doTipo()`. Para criar uma nova, use o painel (ou `Taxonomia::create` / `TaxonomiaSeeder` para as padrão).
 - **Termos** (`categorias`, model `Categoria`): pertencem a uma taxonomia (`taxonomia_id`), slug único **dentro** da taxonomia (como no WP). Vínculo com o item pelo pivot `familia_categoria`; ao alterar use `FamiliaService::sincronizarCategorias()` (pivot não dispara eventos). As opções de uma taxonomia são calculadas por coocorrência nos itens que atendem a todos os outros filtros (`CategoriaService::opcoes`) — não dependem de `parent_id`.
 - **Marca** = `Fabricante` (uma entidade só, compartilhada entre famílias e texturas; `familias.fabricante_id`). Não é termo: a taxonomia "Marca" tem `fonte = fabricante`. O filtro `marca=` vale em qualquer biblioteca (usado na tela `/fabricantes/{slug}`).
-- **"Acessar grátis"** é o campo `familias.gratuita` (antes era um termo `acessar-gratis`), filtro `?gratis=1`.
+- **Barra "Filtrar por"** (grid): três dropdowns — **Recurso** (`?recurso=gratis,premium`; grátis = `familias.gratuita`, premium = itens pagos; os dois marcados = sem filtro; `?gratis=1` antigo ainda é aceito), **Fabricantes** (a taxonomia de fonte fabricante, `?marca=a,b` — várias marcas, resultado = OR entre elas; some na tela da marca, onde ela é fixa; não é limpa ao trocar a categoria) e **Avançado** (`?incluir=a,b&excluir=c`: palavras que o item precisa ter / não pode ter em `busca_texto`). A busca por texto e as linhas de chips das demais taxonomias continuam. Também valem na API (`recurso`, `incluir`, `excluir`).
 - **Grid** (`FamiliaGrid`, serve as 3 bibliotecas e a tela do fabricante): filtros em `$filtros` (slug da taxonomia → valor); a URL é escrita pelo evento `rv-url` e lida em `resources/js/rv-historico.js` (voltar/avançar → `sincronizarUrl`). Ações de navegação devem ser **métodos** (`selecionar`, `remover`, `limpar`, `filtrarBiblioteca`, `alternarGratis`) — eles disparam o `rv-url`. Mudar um filtro limpa os que dependem dele (`TaxonomiaService::descendentes`).
 - **Busca**: coluna desnormalizada `familias.busca_texto` (nome, descrição, tipo, fabricante, nomes de todos os termos) com FULLTEXT, mantida por `BuscaIndexService` + observers.
 - **Tipos**: `familias.tipo` (cast `TipoItem`: `familia | textura | projeto`). A tabela/model continua `familias`/`Familia` e guarda os 3 tipos. URL pública: `$familia->urlPublica()` (nunca montar `/familias-revit/...` à mão). Segmento da URL em `TipoItem::segmento()`; nomes de rota estáveis (`familias.index`, `texturas.pagina`, `projetos.show`) via `TipoItem::chaveRota()`.
@@ -294,6 +294,27 @@ Usuários demo (senha `password`): `gratis@reviteiros.test`, `basic@reviteiros.t
 - **Cadastro**: todo usuário nasce no plano grátis; plano pago só é aplicado pelo webhook após o pagamento. Coluna é `users.plano_id`.
 - **Testes**: usar `DatabaseTruncation` (não `RefreshDatabase`) — o FULLTEXT do InnoDB não enxerga linhas não commitadas.
 - **Cache**: o Laravel 13 não desserializa objetos do cache; guardar arrays e reidratar.
+
+## Idiomas (pt_BR padrão, en, fr, es)
+
+Só o **texto do site** é traduzido (menus, botões, home, login/cadastro, mensagens). O conteúdo do catálogo (nome/descrição de famílias, texturas, projetos, termos e marcas) fica em português; o painel `/admin` também. Se o catálogo precisar de tradução no futuro: `spatie/laravel-translatable` + plugin do Filament (e `busca_texto` por idioma).
+
+- **URL**: português sem prefixo; `/en`, `/fr`, `/es` para os demais (`config/idiomas.php`, `App\Support\Idiomas`). `DefinirIdioma` é middleware **global** (roda antes do roteamento): tira o prefixo do caminho, define o locale e usa o prefixo como raiz das URLs geradas (`URL::forceRootUrl`; assets via `useAssetOrigin`). As rotas continuam declaradas uma vez só, sem prefixo, e `route()`/`url()` já saem com `/en/…`. As atualizações do Livewire (`/en/livewire/update`) herdam o idioma.
+- **Textos**: `__('Frase em português')` — a chave **é** a frase em português (pt_BR não precisa de arquivo). Traduções em `lang/en.json`, `lang/fr.json`, `lang/es.json` (com as mensagens de validação do `laravel-lang`). `fallback_locale = pt_BR`: frase sem tradução aparece em português. Placeholders: `__('Voltar a :biblioteca', [...])`. Conteúdo vindo de config/banco (FAQ, planos, nomes de taxonomias padrão) também passa por `__($var)` e as frases entram nos JSON.
+- **Nova frase**: envolver em `__()` na view/PHP e adicionar a tradução nos 3 JSON. Não montar frases por concatenação.
+- **SEO**: `<x-hreflang />` (alternate + x-default), canonical por idioma, `<html lang>` e `og:locale` via `Idiomas`. Seletor: `<x-seletor-idioma />` (cabeçalho e menu do celular); `Idiomas::urlEm($codigo)` troca só o prefixo e mantém `/page/N/` e a query.
+- **Números**: `Idiomas::numero()` (5.422 / 5,422 / 5 422). O cache da home (`HomeService`) tem uma entrada por idioma (guarda URLs e números formatados).
+- **Testes**: o helper `get('/…')` monta a URL com `url()`, que após uma requisição `/en` ainda carrega a raiz — nos testes use URL completa (`config('app.url')`) a partir da 2ª requisição (ver `IdiomasTest`).
+
+## Favoritos
+
+Usuário logado favorita famílias, texturas e projetos pelo coração (`<x-favorito>`, `resources/js/rv-favorito.js`) nos cards do grid e na página do item. Tabela `favoritos` (`user_id` + `familia_id`, único por par, cascade); `User::favoritos()`, `FavoritoService` (`alternar`, `dentre`). `POST /favoritos/{familia:id}` alterna (JSON; 401 → o botão abre o popup de cadastro) e `GET /favoritos` ("Meus favoritos", 48 por página, mais recentes primeiro, só itens ativos) exigem login. Visitante clicando no coração vê o popup de cadastro.
+
+## Área do aluno/assinante (`/minha-conta`, exige login)
+
+`ContaController` + views em `resources/views/conta/` (`<x-conta.layout>` com abas): **Meus dados** (só o nome é editável; e-mail só pelo suporte; senha pelo fluxo "esqueci minha senha"), **Plano e assinatura** (plano atual, preço/benefícios da config da home, upgrade, cancelamento, histórico de trocas de `plano_historicos`) e **Histórico de uso** (`UsoService`: downloads totais/por tipo/itens diferentes e lista paginada, filtro `?tipo=`; vem da tabela `downloads`).
+- **Upgrade** = botão para o checkout do plano (`CadastroService::checkoutUrl`, Hotmart); o plano só muda quando o pagamento confirma (webhook) ou a equipe altera. Planos oferecidos: pagos acima do atual, sem o Plus.
+- **Cancelamento**: a cobrança é no gateway, então o site só **registra o pedido** (`solicitacoes_cancelamento`, `CancelamentoService`; grava na Auditoria com `forcar: true`, evento `cancelamento_solicitado`). O plano **não muda** na hora: a equipe cancela no gateway e aplica o Grátis (`AssinaturaService::alterarPlano`), que dá o pedido como atendido. O assinante pode desistir enquanto estiver pendente.
 
 ## Painel administrativo (`/admin`, Filament 4)
 

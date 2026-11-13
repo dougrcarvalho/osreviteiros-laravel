@@ -2,19 +2,19 @@
 @switch($botao)
     @case(\App\Services\DownloadService::CADASTRAR)
         <button type="button" class="rv-btn rv-btn--cadastrar" @click="$dispatch('abrir-popup')">
-            <i class="ti ti-user-plus"></i> Baixar Grátis
+            <i class="ti ti-user-plus"></i> {{ __('Baixar Grátis') }}
         </button>
         @break
 
     @case(\App\Services\DownloadService::ASSINAR)
         <button type="button" class="rv-btn rv-btn--assinar" @click="$dispatch('abrir-upgrade')">
-            <i class="ti ti-star"></i> Assinar
+            <i class="ti ti-star"></i> {{ __('Assinar') }}
         </button>
         @break
 
     @case(\App\Services\DownloadService::UPGRADE)
         <button type="button" class="rv-btn rv-btn--assinar" @click="$dispatch('abrir-upgrade', { premium: true })">
-            <i class="ti ti-crown"></i> Exclusivo Premium
+            <i class="ti ti-crown"></i> {{ __('Exclusivo Premium') }}
         </button>
         @break
 
@@ -23,7 +23,7 @@
             @csrf
             <button type="submit" class="rv-btn rv-btn--baixar">
                 <i class="ti ti-download"></i>
-                {{ $botao === \App\Services\DownloadService::BAIXAR_GRATIS ? 'Baixar Grátis' : 'Baixar' }}
+                {{ $botao === \App\Services\DownloadService::BAIXAR_GRATIS ? __('Baixar Grátis') : __('Baixar') }}
             </button>
         </form>
 @endswitch

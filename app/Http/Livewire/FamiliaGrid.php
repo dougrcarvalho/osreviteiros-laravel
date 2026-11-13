@@ -9,6 +9,7 @@ use App\Models\Taxonomia;
 use App\Services\CategoriaService;
 use App\Services\DownloadService;
 use App\Services\FamiliaBuscaService;
+use App\Services\FavoritoService;
 use App\Services\TaxonomiaService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,8 @@ use Livewire\Component;
  * aparece desde o início (faceta independente). Ao trocar um filtro, os que
  * dependem dele são limpos.
  *
- * URL: /{biblioteca}/page/{n}/?cat=…&sub=…&gratis=1&busca=…&orderby=…
+ * URL: /{biblioteca}/page/{n}/?cat=…&sub=…&marca=…&recurso=gratis,premium&incluir=…&excluir=…&busca=…&orderby=…
+ * (a barra "Filtrar por": Recurso, Fabricantes e Avançado; a marca é a taxonomia de fonte fabricante)
  * - filtros: o componente dispara `rv-url` (resources/js/rv-historico.js faz o
  *   pushState; voltar/avançar chamam sincronizarUrl());
  * - paginação SEO: cada bloco de 48 itens é uma página com URL própria; o
@@ -59,7 +61,27 @@ class FamiliaGrid extends Component
 
     public string $orderby = 'date';
 
-    public bool $gratis = false;
+    /**
+     * Filtro "Recurso": gratis e/ou premium (itens pagos); os dois = sem filtro
+     *
+     * @var list<string>
+     */
+    public array $recursos = [];
+
+    /**
+     * Filtro "Avançado": palavras que o item precisa ter / não pode ter
+     *
+     * @var list<string>
+     */
+    public array $incluir = [];
+
+    /** @var list<string> */
+    public array $excluir = [];
+
+    /** Campos de digitação do painel Avançado */
+    public string $novaIncluir = '';
+
+    public string $novaExcluir = '';
 
     /** Primeira e última página carregadas (a grade pode começar no meio: /page/3/) */
     public int $paginaInicial = 1;
@@ -117,6 +139,29 @@ class FamiliaGrid extends Component
         $this->navegou();
     }
 
+    /** Fabricantes: marca ou desmarca um (vários podem ficar ativos; o resultado traz todos) */
+    public function alternarMarca(string $slug): void
+    {
+        $tax = collect(app(TaxonomiaService::class)->doTipo($this->biblioteca))->first(fn (Taxonomia $t) => $t->usaFabricante());
+
+        if (! $tax || $this->ehMarcaFixa($tax) || $slug === '' || mb_strlen($slug) > 120 || str_contains($slug, ',')) {
+            return;
+        }
+
+        $marcas = FamiliaBuscaService::lista($this->filtros[$tax->slug] ?? '');
+        $marcas = in_array($slug, $marcas, true)
+            ? array_values(array_diff($marcas, [$slug]))
+            : [...$marcas, $slug];
+
+        if ($marcas) {
+            $this->filtros[$tax->slug] = implode(',', array_slice($marcas, 0, 30));
+        } else {
+            unset($this->filtros[$tax->slug]);
+        }
+
+        $this->navegou();
+    }
+
     public function filtrarBiblioteca(string $valor): void
     {
         if ($this->bibliotecaFixa) {
@@ -128,9 +173,46 @@ class FamiliaGrid extends Component
         $this->navegou();
     }
 
-    public function alternarGratis(): void
+    public function alternarRecurso(string $recurso): void
     {
-        $this->gratis = ! $this->gratis;
+        if (! in_array($recurso, FamiliaBuscaService::RECURSOS, true)) {
+            return;
+        }
+
+        $this->recursos = in_array($recurso, $this->recursos, true)
+            ? array_values(array_diff($this->recursos, [$recurso]))
+            : [...$this->recursos, $recurso];
+
+        $this->navegou();
+    }
+
+    /** @param  'incluir'|'excluir'  $lista */
+    public function adicionarPalavra(string $lista): void
+    {
+        if (! in_array($lista, ['incluir', 'excluir'], true)) {
+            return;
+        }
+
+        $campo = $lista === 'incluir' ? 'novaIncluir' : 'novaExcluir';
+
+        foreach (FamiliaBuscaService::lista(str_replace(',', ' ', $this->{$campo})) as $palavra) {
+            if (count($this->{$lista}) < 10 && ! in_array(mb_strtolower($palavra), array_map('mb_strtolower', $this->{$lista}), true)) {
+                $this->{$lista}[] = $palavra;
+            }
+        }
+
+        $this->{$campo} = '';
+        $this->navegou();
+    }
+
+    /** @param  'incluir'|'excluir'  $lista */
+    public function removerPalavra(string $lista, string $palavra): void
+    {
+        if (! in_array($lista, ['incluir', 'excluir'], true)) {
+            return;
+        }
+
+        $this->{$lista} = array_values(array_diff($this->{$lista}, [$palavra]));
         $this->navegou();
     }
 
@@ -138,7 +220,7 @@ class FamiliaGrid extends Component
     {
         $this->filtros = [];
         $this->busca   = '';
-        $this->gratis  = false;
+        $this->limparAvancado();
 
         if (! $this->bibliotecaFixa) {
             $this->biblioteca = '';
@@ -177,7 +259,7 @@ class FamiliaGrid extends Component
     {
         $this->filtros = [];
         $this->busca   = '';
-        $this->gratis  = false;
+        $this->limparAvancado();
         $this->orderby = 'date';
 
         if (! $this->bibliotecaFixa) {
@@ -220,7 +302,7 @@ class FamiliaGrid extends Component
 
         $user = Auth::user();
 
-        [$ativas, $linhas] = $this->navegacao($taxonomiasDaBiblioteca, $filtros, $categorias);
+        [$ativas, $linhas, $fabricantes] = $this->navegacao($taxonomiasDaBiblioteca, $filtros, $categorias);
 
         return view('livewire.familia-grid', [
             'familias' => $familias,
@@ -230,8 +312,10 @@ class FamiliaGrid extends Component
             'marcadores'   => $marcadores,
             'urlAnterior'  => $this->paginaInicial > 1 ? $this->urlPagina($this->paginaInicial - 1) : null,
             'urlProxima'   => $this->paginaFinal < $ultima ? $this->urlPagina($this->paginaFinal + 1) : null,
+            'favoritos' => app(FavoritoService::class)->dentre($user, $familias->pluck('id')),
             'ativas'   => $ativas,
             'linhas'   => $linhas,
+            'fabricantes' => $fabricantes,
             'botoes'   => $familias->mapWithKeys(fn (Familia $f) => [$f->id => $download->estadoBotao($user, $f)]),
             'tipos'    => TipoItem::cases(),
             'temFiltro' => $this->temFiltro(),
@@ -242,31 +326,46 @@ class FamiliaGrid extends Component
      * Trilha de filtros ativos + linhas de opções ainda disponíveis.
      *
      * @param  Collection<int, Taxonomia>  $taxonomias
-     * @return array{0: list<array{taxonomia: ?Taxonomia, nome: string, fixo: bool}>, 1: list<array{taxonomia: Taxonomia, opcoes: Collection}>}
+     * @return array{0: list<array{taxonomia: ?Taxonomia, nome: string, fixo: bool}>, 1: list<array{taxonomia: Taxonomia, opcoes: Collection}>, 2: ?array{taxonomia: Taxonomia, opcoes: Collection}}
      */
     private function navegacao(Collection $taxonomias, array $filtros, CategoriaService $categorias): array
     {
         $ativas = [];
         $linhas = [];
+        $fabricantes = null; // dropdown "Fabricantes" (a marca não vira linha de chips)
 
         /** @var Taxonomia $tax */
         foreach ($taxonomias as $tax) {
             $valor = $filtros[$tax->slug] ?? null;
 
-            if (filled($valor)) {
-                $ativas[] = [
-                    'taxonomia' => $tax,
-                    'nome'      => $categorias->rotulo($tax, $valor),
-                    'fixo'      => $this->ehMarcaFixa($tax),
-                ];
+            if ($tax->usaFabricante() && $this->marcaFixa === '') {
+                $fabricantes = ['taxonomia' => $tax, 'opcoes' => $categorias->opcoes($tax, $filtros)];
+            }
 
-                continue;
+            if (filled($valor)) {
+                // Marca aceita várias (um chip por fabricante); as demais, um valor só
+                foreach ($tax->usaFabricante() ? FamiliaBuscaService::lista($valor) : [$valor] as $slug) {
+                    $ativas[] = [
+                        'taxonomia' => $tax,
+                        'valor'     => $slug,
+                        'nome'      => $categorias->rotulo($tax, $slug),
+                        'fixo'      => $this->ehMarcaFixa($tax),
+                    ];
+                }
+
+                if (! $tax->usaFabricante()) {
+                    continue;
+                }
             }
 
             $pai = $tax->pai_id ? $taxonomias->firstWhere('id', $tax->pai_id) : null;
 
             if ($pai && blank($filtros[$pai->slug] ?? null)) {
                 continue; // só depois do pai escolhido
+            }
+
+            if ($tax->usaFabricante()) {
+                continue;
             }
 
             $opcoes = $categorias->opcoes($tax, $filtros);
@@ -285,7 +384,7 @@ class FamiliaGrid extends Component
             ]);
         }
 
-        return [$ativas, $linhas];
+        return [$ativas, $linhas, $fabricantes];
     }
 
     // ─── Estado ─────────────────────────────────────────────────
@@ -310,7 +409,9 @@ class FamiliaGrid extends Component
             'biblioteca' => $this->biblioteca,
             'busca'      => $this->busca,
             'orderby'    => $this->orderby,
-            'gratis'     => $this->gratis,
+            'recurso'    => $this->recursos,
+            'incluir'    => $this->incluir,
+            'excluir'    => $this->excluir,
         ];
     }
 
@@ -323,13 +424,22 @@ class FamiliaGrid extends Component
 
         $this->busca   = is_string($query['busca'] ?? null) ? $query['busca'] : '';
         $this->orderby = is_string($query['orderby'] ?? null) ? $query['orderby'] : 'date';
-        $this->gratis  = in_array($query['gratis'] ?? null, ['1', 1, true], true);
+
+        $recursos = FamiliaBuscaService::lista($query['recurso'] ?? '');
+        if (in_array($query['gratis'] ?? null, ['1', 1, true], true)) { // URL antiga (?gratis=1)
+            $recursos[] = 'gratis';
+        }
+        $this->recursos = array_values(array_unique(array_intersect(FamiliaBuscaService::RECURSOS, $recursos)));
+        $this->incluir  = array_slice(FamiliaBuscaService::lista($query['incluir'] ?? ''), 0, 10);
+        $this->excluir  = array_slice(FamiliaBuscaService::lista($query['excluir'] ?? ''), 0, 10);
 
         foreach (app(TaxonomiaService::class)->doTipo($this->biblioteca) as $tax) {
             $valor = $query[$tax->slug] ?? null;
 
-            if (is_string($valor) && $valor !== '' && mb_strlen($valor) <= 200 && ! $this->ehMarcaFixa($tax)) {
-                $this->filtros[$tax->slug] = $valor;
+            if (is_string($valor) && $valor !== '' && mb_strlen($valor) <= 600 && ! $this->ehMarcaFixa($tax)) {
+                $this->filtros[$tax->slug] = $tax->usaFabricante()
+                    ? implode(',', array_slice(FamiliaBuscaService::lista($valor), 0, 30))
+                    : $valor;
             }
         }
 
@@ -351,8 +461,16 @@ class FamiliaGrid extends Component
             }
         }
 
-        if ($this->gratis) {
-            $query['gratis'] = '1';
+        if ($this->recursos) {
+            $query['recurso'] = implode(',', $this->recursos);
+        }
+
+        if ($this->incluir) {
+            $query['incluir'] = implode(',', $this->incluir);
+        }
+
+        if ($this->excluir) {
+            $query['excluir'] = implode(',', $this->excluir);
         }
 
         if ($this->busca !== '') {
@@ -364,6 +482,12 @@ class FamiliaGrid extends Component
         }
 
         return $query;
+    }
+
+    private function limparAvancado(): void
+    {
+        $this->recursos = $this->incluir = $this->excluir = [];
+        $this->novaIncluir = $this->novaExcluir = '';
     }
 
     private function navegou(): void
@@ -384,7 +508,7 @@ class FamiliaGrid extends Component
 
     private function temFiltro(): bool
     {
-        return $this->busca !== '' || $this->gratis || ! empty(array_filter($this->filtros))
+        return $this->busca !== '' || $this->recursos || $this->incluir || $this->excluir || ! empty(array_filter($this->filtros))
             || (! $this->bibliotecaFixa && $this->biblioteca !== '');
     }
 
@@ -406,7 +530,8 @@ class FamiliaGrid extends Component
         foreach ($service->descendentes($service->doTipo($this->biblioteca), $tax) as $slug) {
             $descendente = $service->porSlug($this->biblioteca, $slug);
 
-            if ($descendente && $this->ehMarcaFixa($descendente)) {
+            // A marca é escolhida no dropdown "Fabricantes", independente da categoria
+            if ($descendente && ($this->ehMarcaFixa($descendente) || $descendente->usaFabricante())) {
                 continue;
             }
 

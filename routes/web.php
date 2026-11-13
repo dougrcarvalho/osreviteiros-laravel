@@ -2,9 +2,11 @@
 
 use App\Enums\TipoItem;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContaController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\FabricanteController;
 use App\Http\Controllers\FamiliaController;
+use App\Http\Controllers\FavoritoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PasswordResetController;
 use App\Support\UrlListagem;
@@ -38,6 +40,24 @@ foreach (TipoItem::cases() as $tipo) {
     ));
     Route::get("/{$antigo}/{slug}", fn (string $slug) => redirect()->to(route($tipo->rotaShow(), $slug), 301));
 }
+
+// Favoritos (só logado): página própria + botão de coração
+Route::middleware('auth')->group(function () {
+    Route::get('/favoritos', [FavoritoController::class, 'index'])->name('favoritos.index');
+    Route::post('/favoritos/{familia:id}', [FavoritoController::class, 'alternar'])
+        ->middleware('throttle:60,1')
+        ->name('favoritos.alternar');
+});
+
+// Área do aluno/assinante
+Route::middleware('auth')->prefix('minha-conta')->group(function () {
+    Route::get('/', [ContaController::class, 'perfil'])->name('conta.perfil');
+    Route::put('/', [ContaController::class, 'atualizarPerfil'])->name('conta.perfil.atualizar');
+    Route::get('/plano', [ContaController::class, 'plano'])->name('conta.plano');
+    Route::post('/plano/cancelamento', [ContaController::class, 'solicitarCancelamento'])->middleware('throttle:10,1')->name('conta.cancelamento');
+    Route::delete('/plano/cancelamento', [ContaController::class, 'desfazerCancelamento'])->name('conta.cancelamento.desfazer');
+    Route::get('/historico', [ContaController::class, 'historico'])->name('conta.historico');
+});
 
 // Download (qualquer tipo de item; devolve o arquivo/link só se o plano permitir)
 Route::post('/familias/{familia:id}/download', [DownloadController::class, 'download'])

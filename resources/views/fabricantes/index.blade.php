@@ -1,15 +1,15 @@
-<x-layouts.app title="Fabricantes" description="Fabricantes e marcas com famílias Revit BIM disponíveis na biblioteca Os Reviteiros." :canonical="route('fabricantes.index')">
+<x-layouts.app :title="__('Fabricantes')" :description="__('Fabricantes e marcas com famílias Revit BIM disponíveis na biblioteca Os Reviteiros.')" :canonical="route('fabricantes.index')">
     <section class="rv-page">
         <div class="rv-container rv-fabricantes">
             <header class="rv-fabricantes__header">
-                <h1>Fabricantes</h1>
-                <span class="rv-badge">{{ $fabricantes->count() }} fabricantes</span>
+                <h1>{{ __('Fabricantes') }}</h1>
+                <span class="rv-badge">{{ __(':total fabricantes', ['total' => $fabricantes->count()]) }}</span>
             </header>
 
             {{-- Busca client-side (Alpine.js) --}}
             <div x-data="{ busca: '' }">
                 <div class="rv-busca" style="margin-left:0">
-                    <input type="search" x-model="busca" placeholder="buscar fabricante..." class="rv-busca__input" aria-label="Buscar fabricante">
+                    <input type="search" x-model="busca" placeholder="{{ __('buscar fabricante...') }}" class="rv-busca__input" aria-label="{{ __('Buscar fabricante') }}">
                     <span class="rv-busca__btn flex items-center"><i class="ti ti-search"></i></span>
                 </div>
 
@@ -27,7 +27,7 @@
 
                             <div class="rv-fabricante-card__info">
                                 <strong>{{ $fab->nome }}</strong>
-                                <span>{{ $fab->familias_count }} {{ $fab->familias_count === 1 ? 'família' : 'famílias' }}</span>
+                                <span>{{ $fab->familias_count }} {{ $fab->familias_count === 1 ? __('família') : __('famílias') }}</span>
                             </div>
                         </a>
                     @endforeach

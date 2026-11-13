@@ -1,14 +1,15 @@
 @props(['title' => null, 'description' => null, 'canonical' => null])
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ \App\Support\Idiomas::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ? $title.' | Os Reviteiros' : 'Os Reviteiros — Famílias Revit BIM' }}</title>
-    <meta name="description" content="{{ $description ?: 'Biblioteca de famílias Revit BIM, texturas e projetos para arquitetos e engenheiros. Baixe e aplique direto no seu projeto.' }}">
+    <title>{{ $title ? $title.' | Os Reviteiros' : __('Os Reviteiros — Famílias Revit BIM') }}</title>
+    <meta name="description" content="{{ $description ?: __('Biblioteca de famílias Revit BIM, texturas e projetos para arquitetos e engenheiros. Baixe e aplique direto no seu projeto.') }}">
     @if ($canonical)<link rel="canonical" href="{{ $canonical }}">@endif
+    <x-hreflang />
     {{ $head ?? '' }}
     @stack('head')
 
@@ -25,7 +26,7 @@
 <body class="min-h-screen flex flex-col">
     <header class="rv-header">
         <div class="rv-container rv-header__inner">
-            <a href="{{ route('familias.index') }}" aria-label="Os Reviteiros — início">
+            <a href="{{ route('familias.index') }}" aria-label="{{ __('Os Reviteiros — início') }}">
                 <img src="{{ asset('images/logo.png') }}" alt="Os Reviteiros" class="rv-logo">
             </a>
 
@@ -35,9 +36,12 @@
                        class="rv-nav__link {{ request()->routeIs($tipoNav->chaveRota().'.*') ? 'rv-nav__link--ativo' : '' }}">{{ $tipoNav->getLabel() }}</a>
                 @endforeach
                 <a href="{{ route('fabricantes.index') }}"
-                   class="rv-nav__link {{ request()->routeIs('fabricantes.*') ? 'rv-nav__link--ativo' : '' }}">Fabricantes</a>
+                   class="rv-nav__link {{ request()->routeIs('fabricantes.*') ? 'rv-nav__link--ativo' : '' }}">{{ __('Fabricantes') }}</a>
+
+                <x-seletor-idioma />
 
                 @auth
+                    <a href="{{ route('favoritos.index') }}" class="rv-nav__link {{ request()->routeIs('favoritos.*') ? 'rv-nav__link--ativo' : '' }}"><i class="ti ti-heart"></i> {{ __('Favoritos') }}</a>
                     <div class="rv-user-menu" x-data="{ aberto: false }" @click.outside="aberto = false" @keydown.escape="aberto = false">
                         <button type="button" class="rv-user-menu__btn" @click="aberto = !aberto" :aria-expanded="aberto">
                             <i class="ti ti-user-circle"></i>
@@ -46,21 +50,23 @@
                         </button>
                         <div class="rv-user-menu__drop" x-show="aberto" x-transition x-cloak>
                             <div class="rv-user-menu__item" style="cursor:default">
-                                <i class="ti ti-crown"></i> Plano {{ auth()->user()->plano?->nome ?? 'Grátis' }}
+                                <i class="ti ti-crown"></i> {{ __('Plano :nome', ['nome' => __(auth()->user()->plano?->nome ?? 'Grátis')]) }}
                             </div>
+                            <a href="{{ route('conta.perfil') }}" class="rv-user-menu__item"><i class="ti ti-user"></i> {{ __('Minha conta') }}</a>
+                            <a href="{{ route('favoritos.index') }}" class="rv-user-menu__item"><i class="ti ti-heart"></i> {{ __('Meus favoritos') }}</a>
                             @unless (auth()->user()->hasPlano())
                                 <button type="button" class="rv-user-menu__item" @click="aberto = false; $dispatch('abrir-upgrade')">
-                                    <i class="ti ti-star"></i> Fazer upgrade
+                                    <i class="ti ti-star"></i> {{ __('Fazer upgrade') }}
                                 </button>
                             @endunless
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="rv-user-menu__item"><i class="ti ti-logout"></i> Sair</button>
+                                <button type="submit" class="rv-user-menu__item"><i class="ti ti-logout"></i> {{ __('Sair') }}</button>
                             </form>
                         </div>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="rv-nav__entrar">Entrar</a>
+                    <a href="{{ route('login') }}" class="rv-nav__entrar">{{ __('Entrar') }}</a>
                 @endauth
             </nav>
         </div>
@@ -71,7 +77,7 @@
     </main>
 
     <footer class="rv-footer">
-        <div class="rv-container">© {{ date('Y') }} Os Reviteiros — Todos os direitos reservados</div>
+        <div class="rv-container">© {{ date('Y') }} Os Reviteiros — {{ __('Todos os direitos reservados') }}</div>
     </footer>
 
     <x-popup-planos />

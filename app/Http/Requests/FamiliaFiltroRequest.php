@@ -26,7 +26,10 @@ class FamiliaFiltroRequest extends FormRequest
             'per_page'   => ['nullable', 'integer', 'min:1', 'max:'.FamiliaBuscaService::MAX_PER_PAGE],
             'biblioteca' => ['nullable', Rule::in(array_column(TipoItem::cases(), 'value'))],
             'gratis'     => ['nullable', 'boolean'],
-            'marca'      => ['nullable', 'string', 'max:200'],
+            'recurso'    => ['nullable', 'string', 'max:30'],
+            'incluir'    => ['nullable', 'string', 'max:300'],
+            'excluir'    => ['nullable', 'string', 'max:300'],
+            'marca'      => ['nullable', 'string', 'max:600'],
             'busca'      => ['nullable', 'string', 'max:100'],
             'orderby'    => ['nullable', Rule::in(FamiliaBuscaService::ORDENS)],
         ];
@@ -35,7 +38,7 @@ class FamiliaFiltroRequest extends FormRequest
     /** @return array<string, mixed> */
     public function filtros(): array
     {
-        $filtros = $this->safe()->only(['biblioteca', 'gratis', 'marca', 'busca', 'orderby']);
+        $filtros = $this->safe()->only(['biblioteca', 'gratis', 'recurso', 'incluir', 'excluir', 'marca', 'busca', 'orderby']);
 
         // Demais parâmetros = slugs de taxonomia (só strings curtas, nome restrito)
         foreach ($this->query() as $chave => $valor) {

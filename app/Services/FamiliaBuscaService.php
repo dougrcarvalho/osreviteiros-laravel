@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
  * Filtros (todos acumulativos, AND):
  *   biblioteca  familia|textura|projeto
  *   gratis      1 = só "acessar grátis"
- *   marca       slug do fabricante (vale em qualquer biblioteca)
+ *   marca       slug de um ou mais fabricantes, separados por vírgula (vale em qualquer biblioteca; OR entre eles)
  *   busca       texto livre
  *   <slug>      slug de qualquer taxonomia da biblioteca (cat, sub, cor, tipo…)
  *
@@ -23,6 +23,9 @@ use Illuminate\Database\Eloquent\Builder;
 class FamiliaBuscaService
 {
     public const ORDENS = ['date', 'az', 'curtidas'];
+
+    /** Valores do filtro "Recurso" */
+    public const RECURSOS = ['gratis', 'premium'];
 
     public const PER_PAGE = 48;
 
@@ -61,8 +64,24 @@ class FamiliaBuscaService
             $query->where('gratuita', true);
         }
 
-        if (! empty($filtros['marca'])) {
-            $query->whereHas('fabricante', fn (Builder $f) => $f->where('slug', $filtros['marca']));
+        // Recurso: grátis e/ou premium (itens pagos). Os dois marcados = sem filtro.
+        $recursos = array_intersect(self::RECURSOS, self::lista($filtros['recurso'] ?? []));
+        if (count($recursos) === 1) {
+            $query->where('gratuita', reset($recursos) === 'gratis');
+        }
+
+        // Avançado: palavras que precisam (ou não podem) aparecer em busca_texto
+        if ($incluir = self::lista($filtros['incluir'] ?? [])) {
+            $this->aplicarBusca($query, implode(' ', $incluir));
+        }
+
+        foreach ($this->palavras(implode(' ', self::lista($filtros['excluir'] ?? []))) as $palavra) {
+            $query->where(fn (Builder $q) => $q->whereNull('busca_texto')
+                ->orWhere('busca_texto', 'not like', '%'.addcslashes($palavra, '%_\\').'%'));
+        }
+
+        if ($marcas = self::lista($filtros['marca'] ?? '')) {
+            $query->whereHas('fabricante', fn (Builder $f) => $f->whereIn('slug', $marcas));
         }
 
         if ($tipo) {
@@ -107,6 +126,21 @@ class FamiliaBuscaService
         }
 
         return $query;
+    }
+
+    /**
+     * Lista a partir de array ou texto separado por vírgula (URL / API).
+     *
+     * @return list<string>
+     */
+    public static function lista(mixed $valor): array
+    {
+        $itens = is_array($valor) ? $valor : explode(',', (string) $valor);
+
+        return array_values(array_unique(array_filter(array_map(
+            fn ($i) => is_string($i) ? trim(mb_substr($i, 0, 120)) : '',
+            $itens
+        ))));
     }
 
     /** @return list<string> */

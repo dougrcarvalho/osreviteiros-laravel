@@ -33,7 +33,7 @@ class UrlListagem
 
         foreach ($query as $chave => $valor) {
             if (is_string($chave) && $chave !== 'page' && preg_match('/^[a-z0-9_-]{1,50}$/', $chave)
-                && is_string($valor) && $valor !== '' && mb_strlen($valor) <= 200) {
+                && is_string($valor) && $valor !== '' && mb_strlen($valor) <= 600) {
                 $limpa[$chave] = $valor;
             }
         }

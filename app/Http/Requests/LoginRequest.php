@@ -40,7 +40,7 @@ class LoginRequest extends FormRequest
             Auth::guard('web')->logout();
 
             throw ValidationException::withMessages([
-                'email' => 'Esta conta está bloqueada. Entre em contato com o suporte.',
+                'email' => __('Esta conta está bloqueada. Entre em contato com o suporte.'),
             ]);
         }
 

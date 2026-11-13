@@ -5,10 +5,12 @@ import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.e
 import rvHistorico from './rv-historico';
 import rvInfinito from './rv-infinito';
 import rvPaginacao, { rvAnteriores } from './rv-paginacao';
+import rvFavorito from './rv-favorito';
 import rvTooltip from './rv-tooltip';
 
 Alpine.data('rvInfinito', rvInfinito);
 Alpine.data('rvTooltip', rvTooltip);
+Alpine.data('rvFavorito', rvFavorito);
 Alpine.data('rvPaginacao', rvPaginacao);
 Alpine.data('rvAnteriores', rvAnteriores);
 

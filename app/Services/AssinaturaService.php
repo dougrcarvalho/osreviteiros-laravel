@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
  */
 class AssinaturaService
 {
-    public function __construct(private AuditoriaService $auditoria) {}
+    public function __construct(private AuditoriaService $auditoria, private CancelamentoService $cancelamentos) {}
 
     public function alterarPlano(
         User $user,
@@ -35,6 +35,11 @@ class AssinaturaService
             // A auditoria da troca é registrada abaixo, com o contexto completo
             $this->auditoria->semRegistro(fn () => $user->forceFill(['plano_id' => $plano?->id])->save());
             $user->setRelation('plano', $plano);
+
+            // Voltou para o grátis: o pedido de cancelamento (se havia) foi atendido
+            if ($plano && ! $plano->isPago()) {
+                $this->cancelamentos->concluirPendentes($user);
+            }
 
             $historico = PlanoHistorico::create([
                 'user_id'           => $user->id,

@@ -48,8 +48,8 @@ class DownloadService
     public function motivoBloqueio(?User $user, Familia $familia): string
     {
         return $this->estadoBotao($user, $familia) === self::UPGRADE
-            ? 'Projetos prontos são exclusivos do plano Premium.'
-            : 'Assine um plano para baixar este item.';
+            ? __('Projetos prontos são exclusivos do plano Premium.')
+            : __('Assine um plano para baixar este item.');
     }
 
     public function estadoBotao(?User $user, Familia $familia): string

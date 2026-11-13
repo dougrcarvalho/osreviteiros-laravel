@@ -17,7 +17,7 @@ class EncerrarContaBloqueada
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->withErrors(['email' => 'Esta conta está bloqueada. Entre em contato com o suporte.']);
+            return redirect()->route('login')->withErrors(['email' => __('Esta conta está bloqueada. Entre em contato com o suporte.')]);
         }
 
         return $next($request);

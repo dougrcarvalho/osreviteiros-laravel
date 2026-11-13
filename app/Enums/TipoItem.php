@@ -20,18 +20,18 @@ enum TipoItem: string implements HasColor, HasIcon, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Familia => 'Famílias',
-            self::Textura => 'Texturas',
-            self::Projeto => 'Projetos',
+            self::Familia => __('Famílias'),
+            self::Textura => __('Texturas'),
+            self::Projeto => __('Projetos'),
         };
     }
 
     public function singular(): string
     {
         return match ($this) {
-            self::Familia => 'Família',
-            self::Textura => 'Textura',
-            self::Projeto => 'Projeto',
+            self::Familia => __('Família'),
+            self::Textura => __('Textura'),
+            self::Projeto => __('Projeto'),
         };
     }
 

@@ -1,5 +1,5 @@
 @php
-    $descricao = \Illuminate\Support\Str::limit(trim(strip_tags((string) $familia->descricao)) ?: "Baixe {$familia->tipo->singular()} Revit {$familia->nome} na biblioteca Os Reviteiros.", 155);
+    $descricao = \Illuminate\Support\Str::limit(trim(strip_tags((string) $familia->descricao)) ?: __('Baixe :tipo Revit :nome na biblioteca Os Reviteiros.', ['tipo' => $familia->tipo->singular(), 'nome' => $familia->nome]), 155);
     $url = $familia->urlPublica();
 @endphp
 
@@ -18,12 +18,12 @@
 
     <div class="rv-page">
         <div class="rv-container">
-            <a href="{{ route($familia->tipo->rotaIndex()) }}" class="rv-voltar"><i class="ti ti-arrow-left"></i> Voltar a {{ mb_strtolower($familia->tipo->getLabel()) }}</a>
+            <a href="{{ route($familia->tipo->rotaIndex()) }}" class="rv-voltar"><i class="ti ti-arrow-left"></i> {{ __('Voltar a :biblioteca', ['biblioteca' => mb_strtolower($familia->tipo->getLabel())]) }}</a>
 
             @if (session('upgrade'))
                 @php($soPremium = $botao === \App\Services\DownloadService::UPGRADE)
                 <div class="rv-alerta rv-alerta--info" x-data x-init="$dispatch('abrir-upgrade', { premium: @js($soPremium) })">
-                    {{ $soPremium ? 'Projetos prontos são exclusivos do plano Premium.' : 'Este item é exclusivo para assinantes.' }}
+                    {{ $soPremium ? __('Projetos prontos são exclusivos do plano Premium.') : __('Este item é exclusivo para assinantes.') }}
                 </div>
             @endif
 
@@ -38,8 +38,8 @@
 
                 <div>
                     <div class="flex gap-2 mb-2">
-                        @if ($familia->isGratuita())<span class="rv-badge rv-badge--gratis">Grátis</span>@endif
-                        @if ($familia->is_novo)<span class="rv-badge">Novo</span>@endif
+                        @if ($familia->isGratuita())<span class="rv-badge rv-badge--gratis">{{ __('Grátis') }}</span>@endif
+                        @if ($familia->is_novo)<span class="rv-badge">{{ __('Novo') }}</span>@endif
                         <span class="rv-badge rv-badge--neutro">{{ $familia->tipo->singular() }}</span>
                     </div>
 
@@ -47,7 +47,7 @@
 
                     @if ($familia->fabricante)
                         <p class="mt-1 text-sm">
-                            Fabricante:
+                            {{ __('Fabricante') }}:
                             <a class="rv-link" href="{{ route('fabricantes.show', $familia->fabricante) }}">{{ $familia->fabricante->nome }}</a>
                         </p>
                     @endif
@@ -59,19 +59,20 @@
                     {{-- Cada termo leva à biblioteca já filtrada por ele --}}
                     @foreach ($grupos as $termos)
                         <div class="rv-categorias">
-                            <span class="rv-categorias__rotulo">{{ $termos->first()->taxonomia->nome_plural }}</span>
+                            <span class="rv-categorias__rotulo">{{ __($termos->first()->taxonomia->nome_plural) }}</span>
                             @foreach ($termos as $termo)
                                 <a href="{{ route($familia->tipo->rotaIndex(), [$termo->taxonomia->slug => $termo->slug]) }}" class="rv-categoria-chip">{{ $termo->nome }}</a>
                             @endforeach
                         </div>
                     @endforeach
 
-                    <div class="mt-4" style="max-width: 320px">
-                        @include('familias._botao', ['familia' => $familia, 'botao' => $botao])
+                    <div class="mt-4 flex items-center gap-3" style="max-width: 420px">
+                        <div class="flex-1">@include('familias._botao', ['familia' => $familia, 'botao' => $botao])</div>
+                        <x-favorito :familia="$familia" :ativo="$favorito" :texto="true" />
                     </div>
 
                     <p class="mt-3 text-xs" style="color: var(--rv-texto-claro)">
-                        <i class="ti ti-heart"></i> {{ $familia->curtidas }} curtidas
+                        <i class="ti ti-heart"></i> {{ __(':total curtidas', ['total' => $familia->curtidas]) }}
                     </p>
                 </div>
             </div>

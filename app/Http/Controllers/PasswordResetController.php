@@ -28,7 +28,7 @@ class PasswordResetController extends Controller
         Password::sendResetLink($request->only('email'));
 
         // Mesma resposta exista ou não a conta (não revela e-mails cadastrados)
-        return back()->with('status', 'Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.');
+        return back()->with('status', __('Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.'));
     }
 
     public function showReset(Request $request, string $token): View
@@ -58,7 +58,7 @@ class PasswordResetController extends Controller
         );
 
         return $status === Password::PASSWORD_RESET
-            ? redirect()->route('login')->with('status', 'Senha redefinida. Faça login com a nova senha.')
-            : back()->withInput($request->only('email'))->withErrors(['email' => 'Link inválido ou expirado.']);
+            ? redirect()->route('login')->with('status', __('Senha redefinida. Faça login com a nova senha.'))
+            : back()->withInput($request->only('email'))->withErrors(['email' => __('Link inválido ou expirado.')]);
     }
 }

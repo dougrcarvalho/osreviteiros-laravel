@@ -33,7 +33,7 @@ class AuthController extends Controller
         }
 
         return redirect()->intended(route('familias.index'))
-            ->with('success', 'Bem-vindo(a) aos Reviteiros!');
+            ->with('success', __('Bem-vindo(a) aos Reviteiros!'));
     }
 
     public function showLogin(): View

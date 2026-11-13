@@ -76,6 +76,67 @@ class FiltroAcumulativoTest extends TestCase
         $this->assertSame(['Piso Madeira'], $gratis);
     }
 
+    public function test_filtro_recurso_premium_e_os_dois(): void
+    {
+        $this->assertSame(['Piso Madeira'], collect($this->getJson('/api/familias?biblioteca=textura&recurso=gratis')->json('data'))->pluck('nome')->all());
+        $this->assertSame([], collect($this->getJson('/api/familias?biblioteca=textura&recurso=premium')->json('data'))->pluck('nome')->all());
+        $this->assertSame(['Piso Madeira'], collect($this->getJson('/api/familias?biblioteca=textura&recurso=gratis,premium')->json('data'))->pluck('nome')->all());
+        $this->assertContains('CR-V', $this->nomes(['recurso' => 'premium']));
+    }
+
+    public function test_avancado_inclui_e_exclui_palavras(): void
+    {
+        $this->assertSame(['CR-V'], $this->nomes(['marca' => 'honda', 'excluir' => 'cb']));
+        $this->assertSame(['CB 500'], $this->nomes(['marca' => 'honda', 'incluir' => '500']));
+        $this->assertSame([], $this->nomes(['marca' => 'honda', 'incluir' => '500', 'excluir' => '500']));
+    }
+
+    public function test_barra_de_filtros_no_grid(): void
+    {
+        Livewire::test(FamiliaGrid::class, ['biblioteca' => 'familia', 'query' => []])
+            ->assertSee('Filtrar por')->assertSee('Recurso')->assertSee('Fabricantes')->assertSee('Avançado')
+            ->call('alternarRecurso', 'premium')->assertSet('recursos', ['premium'])
+            ->call('alternarRecurso', 'invalido')->assertSet('recursos', ['premium'])
+            ->set('novaIncluir', 'natal')->call('adicionarPalavra', 'incluir')->assertSet('incluir', ['natal'])
+            ->set('novaExcluir', 'arvore')->call('adicionarPalavra', 'excluir')->assertSet('excluir', ['arvore'])
+            ->assertDispatched('rv-url', url: url('/familias-revit?recurso=premium&incluir=natal&excluir=arvore'), push: true)
+            ->call('removerPalavra', 'incluir', 'natal')->assertSet('incluir', [])
+            ->call('limpar')->assertSet('recursos', [])->assertSet('excluir', []);
+    }
+
+    public function test_url_restaura_recurso_e_palavras_e_aceita_gratis_antigo(): void
+    {
+        Livewire::test(FamiliaGrid::class, ['biblioteca' => 'familia', 'query' => ['recurso' => 'premium', 'incluir' => 'a,b', 'excluir' => 'c']])
+            ->assertSet('recursos', ['premium'])->assertSet('incluir', ['a', 'b'])->assertSet('excluir', ['c']);
+
+        Livewire::test(FamiliaGrid::class, ['biblioteca' => 'familia', 'query' => ['gratis' => '1']])
+            ->assertSet('recursos', ['gratis']);
+    }
+
+    public function test_varias_marcas_trazem_o_resultado_de_todas(): void
+    {
+        $honda = $this->nomes(['marca' => 'honda']);
+        $toyota = $this->nomes(['marca' => 'toyota']);
+        $ambas = $this->nomes(['marca' => 'honda,toyota']);
+
+        $this->assertNotEmpty($honda);
+        $this->assertNotEmpty($toyota);
+        $this->assertEqualsCanonicalizing(array_merge($honda, $toyota), $ambas);
+    }
+
+    public function test_grid_alterna_varias_marcas(): void
+    {
+        Livewire::test(FamiliaGrid::class, ['biblioteca' => 'familia', 'query' => []])
+            ->call('alternarMarca', 'honda')->assertSet('filtros', ['marca' => 'honda'])
+            ->call('alternarMarca', 'toyota')->assertSet('filtros', ['marca' => 'honda,toyota'])
+            ->assertDispatched('rv-url', url: url('/familias-revit?marca=honda%2Ctoyota'), push: true)
+            ->call('alternarMarca', 'honda')->assertSet('filtros', ['marca' => 'toyota'])
+            ->call('alternarMarca', 'toyota')->assertSet('filtros', []);
+
+        Livewire::test(FamiliaGrid::class, ['biblioteca' => 'familia', 'query' => ['marca' => 'honda,toyota']])
+            ->assertSet('filtros', ['marca' => 'honda,toyota']);
+    }
+
     public function test_marca_vale_em_qualquer_biblioteca(): void
     {
         $todas = collect($this->getJson('/api/familias?marca=herman-miller')->json('data'))->pluck('nome')->sort()->values()->all();
@@ -123,10 +184,10 @@ class FiltroAcumulativoTest extends TestCase
         Livewire::test(FamiliaGrid::class, ['biblioteca' => 'familia', 'query' => []])
             ->call('selecionar', 'cat', 'automoveis')
             ->assertDispatched('rv-url', url: url('/familias-revit?cat=automoveis'), push: true)
-            ->call('alternarGratis')
-            ->assertDispatched('rv-url', url: url('/familias-revit?cat=automoveis&gratis=1'), push: true)
+            ->call('alternarRecurso', 'gratis')
+            ->assertDispatched('rv-url', url: url('/familias-revit?cat=automoveis&recurso=gratis'), push: true)
             ->set('busca', 'rav')
-            ->assertDispatched('rv-url', url: url('/familias-revit?cat=automoveis&gratis=1&busca=rav'), push: false);
+            ->assertDispatched('rv-url', url: url('/familias-revit?cat=automoveis&recurso=gratis&busca=rav'), push: false);
     }
 
     public function test_grid_restaura_filtros_da_url_no_voltar_do_navegador(): void

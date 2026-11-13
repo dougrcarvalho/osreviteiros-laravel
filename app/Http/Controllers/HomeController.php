@@ -13,8 +13,8 @@ class HomeController extends Controller
         $dados = $home->dados();
 
         $seo = [
-            'title' => 'Famílias Revit, Texturas e Projetos Prontos | Os Reviteiros',
-            'description' => "{$dados['totalFmt']} famílias Revit, texturas e projetos prontos para prefeitura. Insira no modelo em um clique com o plugin para Revit. Comece grátis.",
+            'title' => __('Famílias Revit, Texturas e Projetos Prontos | Os Reviteiros'),
+            'description' => __(':total famílias Revit, texturas e projetos prontos para prefeitura. Insira no modelo em um clique com o plugin para Revit. Comece grátis.', ['total' => $dados['totalFmt']]),
             'canonical' => route('home'),
             'image' => config('reviteiros.home.og_image') ?: asset('images/og-home.png'),
         ];

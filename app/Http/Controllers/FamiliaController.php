@@ -42,6 +42,7 @@ class FamiliaController extends Controller
         return view('familias.show', [
             'familia' => $familia,
             'botao'   => $download->estadoBotao($request->user(), $familia),
+            'favorito' => $request->user()?->favoritos()->whereKey($familia->id)->exists() ?? false,
             // Termos agrupados na ordem das taxonomias do tipo
             'grupos'  => $familia->categorias
                 ->filter(fn ($c) => $c->taxonomia?->ativa)

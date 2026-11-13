@@ -29,7 +29,7 @@ class Taxonomia extends Model
     use Auditavel, HasFactory;
 
     /** Chaves de URL com significado próprio — não podem ser slug de taxonomia */
-    public const RESERVADOS = ['biblioteca', 'busca', 'orderby', 'gratis', 'page', 'per_page', 'nivel', 'taxonomia'];
+    public const RESERVADOS = ['biblioteca', 'busca', 'orderby', 'gratis', 'recurso', 'incluir', 'excluir', 'page', 'per_page', 'nivel', 'taxonomia'];
 
     /** Slug obrigatório da taxonomia cuja fonte é o fabricante */
     public const SLUG_MARCA = 'marca';
