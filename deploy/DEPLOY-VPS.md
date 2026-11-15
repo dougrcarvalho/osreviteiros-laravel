@@ -66,3 +66,28 @@ Faça, nesta ordem, parando para me avisar se algo fugir do roteiro:
 6. NÃO rode as importações ainda. Eu vou enviar a pasta import/ (contém hashes de senha) e então peço a importação; quando eu pedir, siga a seção "Importar do WordPress" do DEPLOY-VPS.md (primeiro --dry-run, depois projetos, texturas, famílias e, por último, usuários) e, ao terminar, apague a pasta import/.
 Regras: não derrube os outros sites, sem `down -v`, não mexa no código de outros sites, não publique portas 80/443 neste projeto.
 ````
+
+---
+## Prompt de atualização (site já publicado)
+Usar quando o site já está no ar e só falta subir uma versão nova (ex.: idiomas, favoritos, área do aluno).
+````
+Atualize o site osreviteiros.zivit.com.br (já publicado em /root/web/osreviteiros) para a versão mais recente da branch master. Leia /root/web/osreviteiros/deploy/DEPLOY-VPS.md (seções "Atualizar" e "Regras"). Pare e me avise se algo fugir do roteiro.
+
+Esta versão traz: site em 4 idiomas (URLs /en, /fr, /es; português sem prefixo), filtros Recurso/Fabricantes/Avançado, favoritos, área do aluno (/minha-conta) e ajustes de UI. Há 2 migrations novas (favoritos e solicitacoes_cancelamento).
+
+1. Antes de mexer: `cd /root/web/osreviteiros && git status --short && git log -1 --oneline`. Se houver alterações locais não commitadas, não as descarte: me avise.
+2. Faça backup do banco: `docker compose -f compose.prod.yaml exec mysql sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --databases "$MYSQL_DATABASE"' | gzip > /root/backups/osreviteiros-$(date +%F-%H%M).sql.gz` (crie /root/backups se não existir; confira os nomes das variáveis no .env/compose sem imprimir segredos).
+3. Edite o .env (sem imprimir segredos): garanta `APP_FALLBACK_LOCALE=pt_BR` (era `en`; com `en` o português aparece em inglês quando faltar tradução). Se já existirem, mantenha CHECKOUT_BASIC_URL e CHECKOUT_PREMIUM_URL (os botões de upgrade da área do aluno usam esses links) e me diga se estiverem vazios.
+4. `git pull --ff-only` e `docker compose -f compose.prod.yaml up -d --build`. O entrypoint roda migrate + seeders de planos/taxonomias e recria os caches sozinho. Confirme em `docker logs --tail 60 osreviteiros-app` que as migrations `create_favoritos_table` e `create_solicitacoes_cancelamento_table` rodaram sem erro.
+5. Caddy: o osreviteiros.caddy não mudou; não precisa recarregar. Confirme só que os prefixos /en, /fr e /es chegam ao app (sem redirecionamento que remova a barra final de /page/N/).
+6. Teste (mostre status e uma linha relevante, não o HTML todo):
+   - `curl -sI https://osreviteiros.zivit.com.br/up`
+   - `/`, `/en`, `/fr`, `/es`, `/familias-revit`, `/en/familias-revit/page/2/` → 200 e `<html lang=...>` correto (`curl -s URL | grep -o '<html[^>]*>'`)
+   - `/familias-revit/page/1/` → 301 para `/familias-revit`
+   - `/minha-conta` e `/favoritos` sem login → 302 para /login
+   - `/en/fabricantes` e `/es/login` → 200
+   - Se o `curl /en/familias-revit` trouxer links com `/en/en/` ou assets (`/build/assets/...`) com prefixo /en, avise.
+7. `docker logs --tail 100 osreviteiros-app | grep -i -E "error|exception"` — me diga se apareceu algo.
+8. Relate: commit publicado, migrations aplicadas, resultado dos testes acima e pendências (checkout URLs vazios, etc.).
+Regras: não derrube os outros sites, sem `down -v`, não rode importações, não publique 80/443 neste projeto, não imprima segredos. Se algo quebrar, não faça rollback do banco sozinho: me avise com o log (o backup do passo 2 serve de base).
+````
