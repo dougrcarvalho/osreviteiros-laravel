@@ -564,12 +564,12 @@ body {
     border: none;
     width: 100%;
 }
-.rv-btn--baixar   { background: rgb(213, 234, 189); color: #2F4A1B; }
-.rv-btn--baixar:hover { background: rgb(196, 224, 163); }
-.rv-btn--cadastrar { background: var(--rv-sucesso); color: #fff; }
-.rv-btn--cadastrar:hover { opacity: 0.9; }
-.rv-btn--assinar  { background: var(--rv-dourado); color: #fff; }
-.rv-btn--assinar:hover { background: var(--rv-dourado-hover); }
+.rv-btn--baixar,
+.rv-btn--cadastrar,
+.rv-btn--assinar { background: rgb(213, 234, 189); color: #2F4A1B; border: 1px solid rgb(176, 214, 133); }
+.rv-btn--baixar:hover,
+.rv-btn--cadastrar:hover,
+.rv-btn--assinar:hover { background: rgb(196, 224, 163); }
 .rv-btn--primary  { background: var(--rv-azul-claro); color: #fff; }
 .rv-btn--primary:hover { background: var(--rv-azul-medio); }
 .rv-btn--dourado  { background: var(--rv-dourado); color: #fff; }
