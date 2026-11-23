@@ -22,7 +22,7 @@
         <a href="{{ $familia->urlPublica() }}" class="rv-card__nome" title="{{ $familia->nome }}">{{ $familia->nome }}</a>
         <div class="rv-card__meta">
             <span>{{ $familia->fabricante?->nome ?? 'Reviteiros' }}</span>
-            <!-- <span>{{ $familia->created_at?->format('Y') }}</span> -->
+            <span class="rv-card__downloads" title="{{ __('Total de downloads') }}" aria-label="{{ __('Total de downloads') }}: {{ (int) $familia->downloads_count }}"><i class="ti ti-download"></i> {{ \App\Support\Idiomas::numero((int) $familia->downloads_count) }}</span>
         </div>
     </div>
 

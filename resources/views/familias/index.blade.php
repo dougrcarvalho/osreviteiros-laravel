@@ -7,8 +7,27 @@
         <x-paginacao-seo :seo="$seo" />
     </x-slot:head>
 
-    <div class="rv-page">
+    <div class="rv-page" id="rv-pagina" data-tema="claro"
+         x-data="{ escuro: false,
+                   init() { this.escuro = this.$el.dataset.tema === 'escuro'; },
+                   alternar() {
+                       this.escuro = ! this.escuro;
+                       this.$el.dataset.tema = this.escuro ? 'escuro' : 'claro';
+                       try { localStorage.setItem('rv-tema', this.$el.dataset.tema); } catch (e) {}
+                   } }">
+        {{-- Aplica o tema salvo antes da primeira pintura (evita piscar) --}}
+        <script>
+            try { if (localStorage.getItem('rv-tema') === 'escuro') document.getElementById('rv-pagina').dataset.tema = 'escuro'; } catch (e) {}
+        </script>
         <div class="rv-container">
+            <div class="rv-page__topo">
+                <button type="button" class="rv-tema-toggle" x-on:click="alternar()"
+                        :aria-pressed="escuro.toString()" aria-label="{{ __('Alternar tema claro/escuro') }}">
+                    <i class="ti" :class="escuro ? 'ti-sun' : 'ti-moon'"></i>
+                    <span x-text="escuro ? @js(__('Tema claro')) : @js(__('Tema escuro'))">{{ __('Tema escuro') }}</span>
+                </button>
+            </div>
+
             @if (session('success'))
                 <div class="rv-alerta rv-alerta--sucesso">{{ session('success') }}</div>
             @endif
