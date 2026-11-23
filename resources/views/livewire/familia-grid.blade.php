@@ -55,7 +55,7 @@
                         <input type="checkbox" wire:click="alternarRecurso('gratis')" @checked(in_array('gratis', $recursos, true))> {{ __('Grátis') }}
                     </label>
                     <label class="rv-check">
-                        <input type="checkbox" wire:click="alternarRecurso('premium')" @checked(in_array('premium', $recursos, true))> {{ __('Premium') }}
+                        <input type="checkbox" wire:click="alternarRecurso('premium')" @checked(in_array('premium', $recursos, true))> {{ __('Pago') }}
                     </label>
                     <p class="rv-filtro__dica">
                         @if ($recursos === ['gratis'])

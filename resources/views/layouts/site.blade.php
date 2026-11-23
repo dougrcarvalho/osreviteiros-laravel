@@ -45,7 +45,7 @@
         [__('Famílias'), route('familias.index')],
         [__('Texturas'), route('texturas.index')],
         [__('Projetos prontos'), route('projetos.index')],
-        [__('Templates'), '#'],
+        [__('Render com IA'), '#'],
         [__('Cursos'), '#'],
         [__('Fabricantes'), route('fabricantes.index')],
         [__('Planos'), route('home').'#planos'],
