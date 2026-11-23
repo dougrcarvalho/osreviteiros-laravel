@@ -18,7 +18,7 @@
 
         <div id="video-plugin" class="aspect-[16/10] rounded-rv-card lg:rounded-rv-card-lg bg-rv-dark-2 overflow-hidden flex items-center justify-center text-rv-on-dark text-sm lg:text-[15px] scroll-mt-20 lg:col-start-2 lg:row-span-2 lg:row-start-1">
             @if ($video['mp4'] || $video['webm'])
-                <video class="size-full object-cover" controls playsinline preload="none" width="1040" height="650"
+                <video class="size-full object-cover" controls playsinline preload="metadata" width="1040" height="650"
                        @if ($video['poster']) poster="{{ asset($video['poster']) }}" @endif
                        aria-label="{{ __($video['titulo']) }}">
                     @if ($video['webm'])<source src="{{ asset($video['webm']) }}" type="video/webm">@endif

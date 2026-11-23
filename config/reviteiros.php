@@ -41,7 +41,7 @@ return [
 
         // Vídeo do plugin: mp4/webm (+ poster) OU id do YouTube (carregado só no clique)
         'video' => [
-            'mp4' => null,
+            'mp4' => 'reviteiros-funcionando.mp4',
             'webm' => null,
             'poster' => null,
             'youtube' => env('REVITEIROS_PLUGIN_YOUTUBE'),
