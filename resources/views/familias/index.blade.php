@@ -9,12 +9,14 @@
 
     <div class="rv-page" id="rv-pagina" data-tema="claro"
          x-data="{ escuro: false,
-                   init() { this.escuro = this.$el.dataset.tema === 'escuro'; },
+                   init() {
+                       try { this.escuro = localStorage.getItem('rv-tema') === 'escuro'; } catch (e) {}
+                   },
                    alternar() {
                        this.escuro = ! this.escuro;
-                       this.$el.dataset.tema = this.escuro ? 'escuro' : 'claro';
-                       try { localStorage.setItem('rv-tema', this.$el.dataset.tema); } catch (e) {}
-                   } }">
+                       try { localStorage.setItem('rv-tema', this.escuro ? 'escuro' : 'claro'); } catch (e) {}
+                   } }"
+         :data-tema="escuro ? 'escuro' : 'claro'">
         {{-- Aplica o tema salvo antes da primeira pintura (evita piscar) --}}
         <script>
             try { if (localStorage.getItem('rv-tema') === 'escuro') document.getElementById('rv-pagina').dataset.tema = 'escuro'; } catch (e) {}
