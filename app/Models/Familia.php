@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'tipo', 'nome', 'slug', 'descricao', 'imagem_url', 'gratuita',
+    'tipo', 'nome', 'slug', 'descricao', 'palavras_chave', 'imagem_url', 'gratuita',
     'link_download', 'curtidas', 'fabricante_id', 'ativo', 'wp_post_id',
     'imagem_path', 'arquivo_disk', 'arquivo_path', 'arquivo_nome', 'arquivo_tamanho',
 ])]

@@ -35,6 +35,12 @@ enum TipoItem: string implements HasColor, HasIcon, HasLabel
         };
     }
 
+    /** Famílias e texturas aceitam palavras-chave para a busca */
+    public function usaPalavrasChave(): bool
+    {
+        return $this !== self::Projeto;
+    }
+
     public function getColor(): string
     {
         return match ($this) {

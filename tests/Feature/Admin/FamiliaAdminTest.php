@@ -40,6 +40,7 @@ class FamiliaAdminTest extends TestCase
                 'nome'           => 'Cadeira Aeron',
                 'slug'           => 'cadeira-aeron',
                 'descricao'      => 'Ergonômica',
+                'palavras_chave' => ['gamer', 'home office'],
                 'ativo'          => true,
                 'termos'         => ['cat' => [$mobilia->id], 'sub' => [$cadeira->id]],
                 'fabricante_id'  => $herman->id,
@@ -72,6 +73,8 @@ class FamiliaAdminTest extends TestCase
         $this->assertNotNull($familia->imagem_url);
 
         // Índice de busca e auditoria
+        $this->assertSame('gamer,home office', $familia->palavras_chave);
+        $this->assertStringContainsString('gamer home office', $familia->busca_texto);
         $this->assertStringContainsString('Herman Miller', $familia->busca_texto);
         $this->assertTrue(Auditoria::where('evento', 'criado')->where('auditavel_id', $familia->id)->whereNotNull('autor_id')->exists());
     }

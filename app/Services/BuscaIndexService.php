@@ -19,6 +19,8 @@ class BuscaIndexService
             $familia->nome,
             str_replace('-', ' ', $familia->slug),
             $familia->tipo->getLabel().' '.$familia->tipo->singular(),
+            // Antes da descrição: não se perdem se o texto for cortado
+            $familia->tipo->usaPalavrasChave() ? str_replace(',', ' ', (string) $familia->palavras_chave) : null,
             strip_tags((string) $familia->descricao),
             $familia->fabricante?->nome,
         ];

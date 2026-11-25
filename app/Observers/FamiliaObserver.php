@@ -17,7 +17,7 @@ class FamiliaObserver
 
     public function saved(Familia $familia): void
     {
-        if ($familia->wasRecentlyCreated || $familia->wasChanged(['nome', 'slug', 'descricao', 'tipo', 'fabricante_id'])) {
+        if ($familia->wasRecentlyCreated || $familia->wasChanged(['nome', 'slug', 'descricao', 'palavras_chave', 'tipo', 'fabricante_id'])) {
             $this->index->reindexar($familia);
         }
 

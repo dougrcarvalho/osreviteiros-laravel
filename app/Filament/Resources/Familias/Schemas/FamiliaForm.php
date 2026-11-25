@@ -8,6 +8,7 @@ use App\Models\Familia;
 use App\Services\TaxonomiaService;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -77,6 +78,19 @@ class FamiliaForm
                 ->label('Descrição')
                 ->rows(5)
                 ->helperText('Também é usada na busca do site e como meta description.'),
+            TagsInput::make('palavras_chave')
+                ->label('Palavras-chave')
+                // Guardadas como texto "a,b,c"
+                ->separator(',')
+                ->splitKeys(['Tab', ','])
+                ->trim()
+                ->placeholder('Digite e pressione Enter')
+                ->helperText('Não aparecem no site: servem para o item ser encontrado na busca.')
+                ->visible(function (Get $get) {
+                    $tipo = $get('tipo');
+
+                    return ($tipo instanceof TipoItem ? $tipo : TipoItem::tryFrom((string) $tipo))?->usaPalavrasChave() ?? false;
+                }),
         ]);
     }
 

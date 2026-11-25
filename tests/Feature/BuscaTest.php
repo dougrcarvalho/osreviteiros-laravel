@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\TipoItem;
+use App\Models\Familia;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\Concerns\CriaCatalogo;
 use Tests\TestCase;
@@ -59,6 +60,20 @@ class BuscaTest extends TestCase
         $this->assertSame(['Aeron'], $this->busca('cadeira escritorio'));
         $this->assertSame(['Aeron'], $this->busca('cadeiras'));
         $this->assertSame([], $this->busca('cadeira deca'));
+    }
+
+    public function test_busca_por_palavras_chave_em_familias_e_texturas(): void
+    {
+        Familia::where('slug', 'aeron')->first()->update(['palavras_chave' => 'gamer,home office']);
+        $this->familia('Mármore', [], ['tipo' => TipoItem::Textura, 'palavras_chave' => 'bancada']);
+
+        $this->assertSame(['Aeron'], $this->busca('gamer'));
+        $this->assertSame(['Aeron'], $this->busca('cadeira home office'));
+        $this->assertSame(['Mármore'], $this->busca('bancada', ['biblioteca' => 'textura']));
+
+        Familia::where('slug', 'aeron')->first()->update(['palavras_chave' => null]);
+
+        $this->assertSame([], $this->busca('gamer'));
     }
 
     public function test_busca_combina_com_filtros(): void

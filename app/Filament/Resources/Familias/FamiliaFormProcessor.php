@@ -62,6 +62,10 @@ class FamiliaFormProcessor
             $model['fabricante_id'] = null;
         }
 
+        if ($tipo && ! $tipo->usaPalavrasChave()) {
+            $model['palavras_chave'] = null;
+        }
+
         return [$model, $extras];
     }
 
